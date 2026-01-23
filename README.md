@@ -103,9 +103,13 @@ CCM/
 2. Release 모드로 빌드
 3. `CCM\bin\Release\CCM.dll` 생성됨
 
-### 예제 코드
+---
 
-#### MSSQL
+## 예제 코드
+
+<details>
+<summary><b>MSSQL</b></summary>
+
 ```csharp
 using CCM.Database;
 
@@ -190,7 +194,11 @@ for (int i = 0; i < 10000; i++)
 db.BulkInsert(bulkData, "TargetTable", batchSize: 1000);
 ```
 
-#### TCP Server
+</details>
+
+<details>
+<summary><b>TCP Server</b></summary>
+
 ```csharp
 using CCM.Communication.Socket;
 
@@ -217,7 +225,11 @@ server.DisconnectClient("clientId");
 server.Stop();
 ```
 
-#### TCP Client
+</details>
+
+<details>
+<summary><b>TCP Client</b></summary>
+
 ```csharp
 using CCM.Communication.Socket;
 
@@ -245,7 +257,11 @@ byte[] exactData = tcp.ReceiveExact(10, timeout: 3000);
 tcp.Disconnect();
 ```
 
-#### UDP
+</details>
+
+<details>
+<summary><b>UDP</b></summary>
+
 ```csharp
 using CCM.Communication.Socket;
 
@@ -266,7 +282,11 @@ udp.SendBroadcast(new byte[] { 0xFF, 0xFF }, 8001);
 udp.Disconnect();
 ```
 
-#### Serial Port
+</details>
+
+<details>
+<summary><b>Serial Port</b></summary>
+
 ```csharp
 using CCM.Communication.Serial;
 using System.IO.Ports;
@@ -298,7 +318,11 @@ byte[] response = serial.SendAndReceive(new byte[] { 0x01 }, timeout: 1000);
 serial.Disconnect();
 ```
 
-#### Mitsubishi PLC
+</details>
+
+<details>
+<summary><b>Mitsubishi PLC</b></summary>
+
 ```csharp
 using CCM.Communication.PLC;
 
@@ -337,7 +361,11 @@ plc.WriteReal("D", 100, 3.14f);
 plc.Disconnect();
 ```
 
-#### Siemens PLC
+</details>
+
+<details>
+<summary><b>Siemens PLC</b></summary>
+
 ```csharp
 using CCM.Communication.PLC;
 
@@ -368,7 +396,11 @@ plc.WriteBit("DB1", 0, true);
 plc.Disconnect();
 ```
 
-#### LS Electric XGT
+</details>
+
+<details>
+<summary><b>LS Electric XGT</b></summary>
+
 ```csharp
 var plc = new LsElectricXgt("192.168.0.10", 2004);
 plc.Connect();
@@ -390,7 +422,11 @@ plc.WriteWord("%MW", 100, 1234);
 plc.Disconnect();
 ```
 
-#### Modbus
+</details>
+
+<details>
+<summary><b>Modbus</b></summary>
+
 ```csharp
 using CCM.Communication.PLC;
 using System.IO.Ports;
@@ -432,15 +468,16 @@ var rtuRegisters = modbusRtu.ReadHoldingRegisters(0, 10);
 modbusRtu.Disconnect();
 ```
 
+</details>
+
 ---
 
 ## PLC 유틸리티 상세 가이드
 
----
+<details>
+<summary><b>PlcMonitor (데이터 모니터링)</b></summary>
 
-### PlcMonitor (데이터 모니터링)
-
-#### 개념
+### 개념
 
 PLC 데이터를 **주기적으로 읽어서 변경을 감지**하는 클래스입니다.
 
@@ -464,7 +501,7 @@ PLC 데이터를 **주기적으로 읽어서 변경을 감지**하는 클래스�
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### 사용 상황
+### 사용 상황
 
 | 상황 | 설명 |
 |------|------|
@@ -472,7 +509,7 @@ PLC 데이터를 **주기적으로 읽어서 변경을 감지**하는 클래스�
 | 상태 변경 감지 | 운전/정지 상태, 알람 발생 등 |
 | 데이터 로깅 트리거 | 값이 바뀔 때만 기록 |
 
-#### 예제 코드
+### 예제 코드
 
 ```csharp
 using CCM.Communication.PLC;
@@ -576,7 +613,7 @@ monitor.Stop();
 monitor.Dispose();
 ```
 
-#### 데이터 타입
+### 데이터 타입
 
 | 타입 | 설명 | PLC 예시 |
 |------|------|----------|
@@ -586,11 +623,12 @@ monitor.Dispose();
 | `Real` | 32비트 실수 | D100-D101 (2워드, Float) |
 | `Words` | 16비트 정수 배열 | D100~D109 (연속) |
 
----
+</details>
 
-### RecipeManager (레시피 관리)
+<details>
+<summary><b>RecipeManager (레시피 관리)</b></summary>
 
-#### 개념
+### 개념
 
 **레시피**란 제품 생산에 필요한 **설정값 모음**입니다. 제품마다 다른 설정(온도, 압력, 시간 등)을 파일로 저장하고, 필요할 때 PLC에 한 번에 전송합니다.
 
@@ -616,7 +654,7 @@ monitor.Dispose();
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### 사용 상황
+### 사용 상황
 
 | 상황 | 설명 |
 |------|------|
@@ -625,7 +663,7 @@ monitor.Dispose();
 | 설정 복원 | 저장된 파일을 PLC에 전송 |
 | 설정 비교 | 파일과 PLC 값이 같은지 확인 |
 
-#### 예제 코드
+### 예제 코드
 
 ```csharp
 using CCM.Communication.PLC;
@@ -733,7 +771,7 @@ else
 }
 ```
 
-#### 실전 예시: 제품 변경
+### 실전 예시: 제품 변경
 
 ```csharp
 // 작업자가 "B제품"을 선택했을 때
@@ -764,11 +802,12 @@ void ChangeProduct(string productName)
 }
 ```
 
----
+</details>
 
-### HandshakeHelper (PC↔PLC 핸드쉐이크)
+<details>
+<summary><b>HandshakeHelper (PC↔PLC 핸드쉐이크)</b></summary>
 
-#### 개념
+### 개념
 
 PC와 PLC 간의 **명령-응답 동기화 메커니즘**입니다. PC가 "이 작업 해줘"라고 요청하고, PLC가 "다 했어"라고 응답하는 패턴입니다.
 
@@ -802,7 +841,7 @@ PC와 PLC 간의 **명령-응답 동기화 메커니즘**입니다. PC가 "이 �
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### 왜 필요한가?
+### 왜 필요한가?
 
 **잘못된 방식 (타이밍 문제 발생):**
 ```csharp
@@ -819,7 +858,7 @@ if (result.IsSuccess)
     var data = plc.ReadWord("D", 200);  // 이제 안전하게 읽기
 ```
 
-#### 사용 상황
+### 사용 상황
 
 | 상황 | 설명 |
 |------|------|
@@ -828,7 +867,7 @@ if (result.IsSuccess)
 | 데이터 요청 | PC가 조회 요청 → PLC가 데이터 준비 완료 신호 |
 | 수동 조작 | PC에서 버튼 클릭 → PLC가 동작 완료 신호 |
 
-#### 예제 코드
+### 예제 코드
 
 ```csharp
 using CCM.Communication.PLC;
@@ -949,7 +988,7 @@ bool wordReached = handshake.WaitForWord("D", 100, targetValue: 1, timeout: 5000
 bool rangeReached = handshake.WaitForWordInRange("D", 100, 10, 20, timeout: 5000);
 ```
 
-#### PLC 래더 프로그램 예시 (Mitsubishi GX Works)
+### PLC 래더 프로그램 예시 (Mitsubishi GX Works)
 
 PC와 핸드쉐이크하려면 PLC에도 대응하는 프로그램이 필요합니다:
 
@@ -979,7 +1018,7 @@ PC와 핸드쉐이크하려면 PLC에도 대응하는 프로그램이 필요합�
 ──┤/M100 ├──┤ M200 ├──────────────────────────( RST M200 )──
 ```
 
-#### 실전 예시: 생산 시작 전체 흐름
+### 실전 예시: 생산 시작 전체 흐름
 
 ```csharp
 void StartProduction(int lineNo, int targetQty)
@@ -1026,7 +1065,7 @@ void StartProduction(int lineNo, int targetQty)
 }
 ```
 
-#### 주요 속성/메서드 요약
+### 주요 속성/메서드 요약
 
 | 속성/메서드 | 설명 |
 |------------|------|
@@ -1040,11 +1079,12 @@ void StartProduction(int lineNo, int targetQty)
 | `SendPulse()` | 펄스(원샷) 전송 |
 | `StateChanged` | 상태 변경 이벤트 |
 
----
+</details>
 
-### AlarmManager (알람 관리)
+<details>
+<summary><b>AlarmManager (알람 관리)</b></summary>
 
-#### 개념
+### 개념
 
 PLC의 **알람 비트들을 모니터링**하고, 알람 **발생/해제 이력을 관리**하는 클래스입니다.
 
@@ -1077,7 +1117,7 @@ PLC의 **알람 비트들을 모니터링**하고, 알람 **발생/해제 이력
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### 알람 상태 흐름
+### 알람 상태 흐름
 
 ```
    [Normal]                    [Active]                 [Acknowledged]              [Cleared]
@@ -1088,7 +1128,7 @@ PLC의 **알람 비트들을 모니터링**하고, 알람 **발생/해제 이력
       │                           │                           │                         │
 ```
 
-#### 사용 상황
+### 사용 상황
 
 | 상황 | 설명 |
 |------|------|
@@ -1097,7 +1137,7 @@ PLC의 **알람 비트들을 모니터링**하고, 알람 **발생/해제 이력
 | 알람 확인(Ack) | 운전자가 알람을 인지했음을 표시 |
 | 알람 통계 | 알람 발생 빈도, 등급별 분류 |
 
-#### 예제 코드
+### 예제 코드
 
 ```csharp
 using CCM.Communication.PLC;
@@ -1275,7 +1315,7 @@ alarm.Stop();
 alarm.Dispose();
 ```
 
-#### 알람 등급
+### 알람 등급
 
 | 등급 | 값 | 설명 | 예시 |
 |------|----|----|------|
@@ -1284,7 +1324,7 @@ alarm.Dispose();
 | `Error` | 2 | 에러 | 센서 이상, 모터 과부하 |
 | `Critical` | 3 | 치명적 | 비상정지, 화재 감지 |
 
-#### 실전 예시: 알람 화면 UI
+### 실전 예시: 알람 화면 UI
 
 ```csharp
 // WinForm 알람 화면 예시
@@ -1353,12 +1393,14 @@ public partial class AlarmForm : Form
         lblStatus.Text = $"{count}개 알람 확인됨";
     }
 }
+```
 
----
+</details>
 
-### ProductionLogger (생산 데이터 로깅)
+<details>
+<summary><b>ProductionLogger (생산 데이터 로깅)</b></summary>
 
-#### 개념
+### 개념
 
 PLC에서 **생산 데이터를 주기적으로 읽어서 DB에 저장**하는 클래스입니다. MES(제조실행시스템)나 데이터 분석을 위한 데이터 수집에 사용합니다.
 
@@ -1386,7 +1428,7 @@ PLC에서 **생산 데이터를 주기적으로 읽어서 DB에 저장**하는 �
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### 로깅 트리거 모드
+### 로깅 트리거 모드
 
 | 모드 | 설명 | 사용 상황 |
 |------|------|----------|
@@ -1394,7 +1436,7 @@ PLC에서 **생산 데이터를 주기적으로 읽어서 DB에 저장**하는 �
 | `OnTrigger` | 특정 비트 On 시 로깅 | 이벤트 기반 (제품 완료, 작업 시작) |
 | `OnChange` | 값 변경 시 로깅 | 상태 변경 기록 (모드 변경, 설정 변경) |
 
-#### 사용 상황
+### 사용 상황
 
 | 상황 | 설명 |
 |------|------|
@@ -1403,7 +1445,7 @@ PLC에서 **생산 데이터를 주기적으로 읽어서 DB에 저장**하는 �
 | 품질 데이터 수집 | 측정값, 검사 결과 |
 | 이벤트 로깅 | 작업 시작/종료, 상태 변경 |
 
-#### 예제 코드
+### 예제 코드
 
 ```csharp
 using CCM.Communication.PLC;
@@ -1507,7 +1549,7 @@ logger.Stop();
 logger.Dispose();
 ```
 
-#### 트리거 기반 로깅
+### 트리거 기반 로깅
 
 ```csharp
 // ============================================
@@ -1539,7 +1581,7 @@ completionLogger.Start();
 // ...
 ```
 
-#### 값 변경 시 로깅
+### 값 변경 시 로깅
 
 ```csharp
 // ============================================
@@ -1567,7 +1609,7 @@ changeLogger.Start();
 // 14:20:00     2        85.0     6.5      ← 압력 변경
 ```
 
-#### DB 테이블 자동 생성
+### DB 테이블 자동 생성
 
 ```csharp
 // ============================================
@@ -1611,7 +1653,7 @@ Console.WriteLine(logger.GenerateStoredProcedureSql());
 // END
 ```
 
-#### 스케일 팩터 설명
+### 스케일 팩터 설명
 
 ```csharp
 // PLC는 정수만 다루므로, 소수점은 스케일 변환 필요
@@ -1630,7 +1672,7 @@ logger.AddWord("SensorTemp", "D", 102, scaleFactor: 0.05, offset: -50);
 // D102=2000 → SensorTemp = (2000 × 0.05) - 50 = 50°C
 ```
 
-#### 실전 예시: 생산 데이터 수집 시스템
+### 실전 예시: 생산 데이터 수집 시스템
 
 ```csharp
 public class ProductionDataCollector : IDisposable
@@ -1697,7 +1739,7 @@ public class ProductionDataCollector : IDisposable
 }
 ```
 
-#### 주요 속성/메서드 요약
+### 주요 속성/메서드 요약
 
 | 속성/메서드 | 설명 |
 |------------|------|
@@ -1710,6 +1752,10 @@ public class ProductionDataCollector : IDisposable
 | `LogOnce` | 수동 로깅 (1회) |
 | `TotalLogCount` | 총 로깅 횟수 |
 | `GenerateCreateTableSql` | 테이블 생성 SQL 출력 |
+
+</details>
+
+---
 
 ## 라이선스
 
