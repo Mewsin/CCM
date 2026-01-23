@@ -49,6 +49,11 @@
     <Compile Include="Communication\PLC\SiemensS7Protocol.cs" />
     <Compile Include="Communication\PLC\LsElectricXgt.cs" />
     <Compile Include="Communication\PLC\ModbusClient.cs" />
+    <Compile Include="Communication\PLC\Utilities\PlcMonitor.cs" />
+    <Compile Include="Communication\PLC\Utilities\RecipeManager.cs" />
+    <Compile Include="Communication\PLC\Utilities\HandshakeHelper.cs" />
+    <Compile Include="Communication\PLC\Utilities\AlarmManager.cs" />
+    <Compile Include="Communication\PLC\Utilities\ProductionLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
