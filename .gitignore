@@ -1,0 +1,34 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.suo
+*.cache
+*.vspscc
+*.vssscc
+
+# NuGet
+packages/
+*.nupkg
+
+# Build
+*.dll
+*.exe
+*.pdb
+
+# Rider
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
