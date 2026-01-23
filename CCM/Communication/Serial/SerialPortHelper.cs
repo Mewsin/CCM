@@ -1,6 +1,7 @@
 using System;
 using System.IO.Ports;
 using System.Threading;
+using System.Threading.Tasks;
 using CCM.Communication.Interfaces;
 
 namespace CCM.Communication.Serial
@@ -471,6 +472,260 @@ namespace CCM.Communication.Serial
                 {
                     _serialPort.DiscardOutBuffer();
                 }
+            }
+        }
+
+        #endregion
+
+        #region Async Methods (Task-based)
+
+        /// <summary>
+        /// 비동기 바이트 배열 전송
+        /// </summary>
+        public async Task<bool> SendAsync(byte[] data, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (!IsConnected)
+                    return false;
+
+                await Task.Run(() =>
+                {
+                    lock (_lockObject)
+                    {
+                        _serialPort.Write(data, 0, data.Length);
+                    }
+                }, cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 비동기 문자열 전송
+        /// </summary>
+        public async Task<bool> SendAsync(string text, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (!IsConnected)
+                    return false;
+
+                await Task.Run(() =>
+                {
+                    lock (_lockObject)
+                    {
+                        _serialPort.Write(text);
+                    }
+                }, cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 비동기 데이터 수신
+        /// </summary>
+        public async Task<byte[]> ReceiveAsync(int timeout = 3000, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (!IsConnected)
+                    return null;
+
+                return await Task.Run(() =>
+                {
+                    lock (_lockObject)
+                    {
+                        _serialPort.ReadTimeout = timeout;
+
+                        // 데이터 대기
+                        int elapsed = 0;
+                        while (_serialPort.BytesToRead == 0 && elapsed < timeout)
+                        {
+                            if (cancellationToken.IsCancellationRequested)
+                                return null;
+
+                            Thread.Sleep(10);
+                            elapsed += 10;
+                        }
+
+                        int bytesToRead = _serialPort.BytesToRead;
+                        if (bytesToRead > 0)
+                        {
+                            byte[] buffer = new byte[bytesToRead];
+                            _serialPort.Read(buffer, 0, bytesToRead);
+                            return buffer;
+                        }
+                    }
+                    return null;
+                }, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 비동기 데이터 전송 후 응답 수신
+        /// </summary>
+        public async Task<byte[]> SendAndReceiveAsync(byte[] data, int timeout = 3000, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (!IsConnected)
+                    return null;
+
+                return await Task.Run(() =>
+                {
+                    lock (_lockObject)
+                    {
+                        // 수신 버퍼 클리어
+                        _serialPort.DiscardInBuffer();
+
+                        // 데이터 전송
+                        _serialPort.Write(data, 0, data.Length);
+
+                        // 응답 대기
+                        _serialPort.ReadTimeout = timeout;
+
+                        // 데이터 대기
+                        int elapsed = 0;
+                        while (_serialPort.BytesToRead == 0 && elapsed < timeout)
+                        {
+                            if (cancellationToken.IsCancellationRequested)
+                                return null;
+
+                            Thread.Sleep(10);
+                            elapsed += 10;
+                        }
+
+                        // 약간의 추가 대기 (패킷 완료 대기)
+                        Thread.Sleep(50);
+
+                        // 응답 수신
+                        int bytesToRead = _serialPort.BytesToRead;
+                        if (bytesToRead > 0)
+                        {
+                            byte[] buffer = new byte[bytesToRead];
+                            _serialPort.Read(buffer, 0, bytesToRead);
+                            return buffer;
+                        }
+                    }
+                    return null;
+                }, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 비동기로 지정된 길이만큼 데이터 수신
+        /// </summary>
+        public async Task<byte[]> ReceiveExactAsync(int length, int timeout = 3000, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (!IsConnected)
+                    return null;
+
+                return await Task.Run(() =>
+                {
+                    lock (_lockObject)
+                    {
+                        _serialPort.ReadTimeout = timeout;
+                        byte[] buffer = new byte[length];
+                        int totalRead = 0;
+                        int startTime = Environment.TickCount;
+
+                        while (totalRead < length)
+                        {
+                            if (cancellationToken.IsCancellationRequested)
+                                break;
+
+                            if (Environment.TickCount - startTime > timeout)
+                                break;
+
+                            if (_serialPort.BytesToRead > 0)
+                            {
+                                int bytesToRead = Math.Min(_serialPort.BytesToRead, length - totalRead);
+                                int bytesRead = _serialPort.Read(buffer, totalRead, bytesToRead);
+                                totalRead += bytesRead;
+                            }
+                            else
+                            {
+                                Thread.Sleep(10);
+                            }
+                        }
+
+                        if (totalRead == length)
+                            return buffer;
+
+                        byte[] result = new byte[totalRead];
+                        Array.Copy(buffer, result, totalRead);
+                        return result;
+                    }
+                }, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 비동기 한 줄 읽기
+        /// </summary>
+        public async Task<string> ReadLineAsync(int timeout = 3000, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (!IsConnected)
+                    return null;
+
+                return await Task.Run(() =>
+                {
+                    lock (_lockObject)
+                    {
+                        _serialPort.ReadTimeout = timeout;
+                        return _serialPort.ReadLine();
+                    }
+                }, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return null;
             }
         }
 

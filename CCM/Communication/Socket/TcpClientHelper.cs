@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using CCM.Communication.Interfaces;
 
 namespace CCM.Communication.Socket
@@ -338,6 +339,219 @@ namespace CCM.Communication.Socket
                     Array.Copy(buffer, result, totalRead);
                     return result;
                 }
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return null;
+            }
+        }
+
+        #endregion
+
+        #region Async Methods (Task-based)
+
+        /// <summary>
+        /// 서버에 비동기 연결
+        /// </summary>
+        public async Task<bool> ConnectAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (IsConnected)
+                    return true;
+
+                _client = new TcpClient();
+                _client.ReceiveTimeout = ReceiveTimeout;
+                _client.SendTimeout = SendTimeout;
+                _client.ReceiveBufferSize = ReceiveBufferSize;
+
+                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+                {
+                    cts.CancelAfter(ConnectTimeout);
+
+                    try
+                    {
+                        await Task.Run(() => _client.Connect(ServerIp, ServerPort), cts.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _client.Close();
+                        _client = null;
+                        OnConnectionStateChanged(false, "Connection timeout or cancelled");
+                        return false;
+                    }
+                }
+
+                _stream = _client.GetStream();
+
+                if (UseAsyncReceive)
+                {
+                    StartReceiveThread();
+                }
+
+                OnConnectionStateChanged(true, "Connected");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                OnConnectionStateChanged(false, ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 비동기 데이터 전송
+        /// </summary>
+        public async Task<bool> SendAsync(byte[] data, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (!IsConnected || _stream == null)
+                    return false;
+
+                await _stream.WriteAsync(data, 0, data.Length, cancellationToken);
+                await _stream.FlushAsync(cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                if (AutoReconnect)
+                {
+                    Disconnect();
+                    await ConnectAsync(cancellationToken);
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 비동기 데이터 수신
+        /// </summary>
+        public async Task<byte[]> ReceiveAsync(int timeout = 3000, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (!IsConnected || _stream == null)
+                    return null;
+
+                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+                {
+                    cts.CancelAfter(timeout);
+
+                    byte[] buffer = new byte[ReceiveBufferSize];
+                    int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+
+                    if (bytesRead > 0)
+                    {
+                        byte[] result = new byte[bytesRead];
+                        Array.Copy(buffer, result, bytesRead);
+                        return result;
+                    }
+                }
+                return null;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 비동기 데이터 전송 후 응답 수신
+        /// </summary>
+        public async Task<byte[]> SendAndReceiveAsync(byte[] data, int timeout = 3000, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (!IsConnected || _stream == null)
+                    return null;
+
+                // 수신 버퍼 클리어
+                if (_stream.DataAvailable)
+                {
+                    byte[] dummy = new byte[ReceiveBufferSize];
+                    while (_stream.DataAvailable)
+                    {
+                        await _stream.ReadAsync(dummy, 0, dummy.Length, cancellationToken);
+                    }
+                }
+
+                // 데이터 전송
+                await _stream.WriteAsync(data, 0, data.Length, cancellationToken);
+                await _stream.FlushAsync(cancellationToken);
+
+                // 응답 수신
+                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+                {
+                    cts.CancelAfter(timeout);
+
+                    byte[] buffer = new byte[ReceiveBufferSize];
+                    int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+
+                    if (bytesRead > 0)
+                    {
+                        byte[] result = new byte[bytesRead];
+                        Array.Copy(buffer, result, bytesRead);
+                        return result;
+                    }
+                }
+                return null;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 비동기로 지정된 길이만큼 데이터 수신
+        /// </summary>
+        public async Task<byte[]> ReceiveExactAsync(int length, int timeout = 3000, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (!IsConnected || _stream == null)
+                    return null;
+
+                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+                {
+                    cts.CancelAfter(timeout);
+
+                    byte[] buffer = new byte[length];
+                    int totalRead = 0;
+
+                    while (totalRead < length)
+                    {
+                        int bytesRead = await _stream.ReadAsync(buffer, totalRead, length - totalRead, cts.Token);
+                        if (bytesRead == 0)
+                            break;
+                        totalRead += bytesRead;
+                    }
+
+                    if (totalRead == length)
+                        return buffer;
+
+                    byte[] result = new byte[totalRead];
+                    Array.Copy(buffer, result, totalRead);
+                    return result;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
             }
             catch (Exception ex)
             {

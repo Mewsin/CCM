@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using CCM.Communication.Interfaces;
 
 namespace CCM.Communication.Socket
@@ -325,6 +326,44 @@ namespace CCM.Communication.Socket
                 return client.Connected;
             }
             return false;
+        }
+
+        /// <summary>
+        /// 비동기로 모든 클라이언트에게 데이터 전송 (브로드캐스트)
+        /// </summary>
+        public async Task SendToAllAsync(byte[] data, CancellationToken cancellationToken = default)
+        {
+            var tasks = _clients.Keys.Select(clientId => SendToAsync(clientId, data, cancellationToken));
+            await Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// 비동기로 특정 클라이언트에게 데이터 전송
+        /// </summary>
+        public async Task<bool> SendToAsync(string clientId, byte[] data, CancellationToken cancellationToken = default)
+        {
+            if (!_clients.TryGetValue(clientId, out TcpClient client))
+                return false;
+
+            try
+            {
+                if (!client.Connected)
+                {
+                    DisconnectClient(clientId);
+                    return false;
+                }
+
+                NetworkStream stream = client.GetStream();
+                await stream.WriteAsync(data, 0, data.Length, cancellationToken);
+                await stream.FlushAsync(cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex, $"Send error to client {clientId}");
+                DisconnectClient(clientId);
+                return false;
+            }
         }
 
         #endregion

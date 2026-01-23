@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using CCM.Communication.Interfaces;
 
 namespace CCM.Communication.Socket
@@ -289,6 +290,150 @@ namespace CCM.Communication.Socket
             {
                 OnErrorOccurred(ex);
                 return null;
+            }
+        }
+
+        #endregion
+
+        #region Async Methods (Task-based)
+
+        /// <summary>
+        /// 비동기 데이터 전송
+        /// </summary>
+        public async Task<bool> SendAsync(byte[] data, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (_client == null)
+                    return false;
+
+                await _client.SendAsync(data, data.Length, _remoteEndPoint);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 비동기로 특정 대상에 데이터 전송
+        /// </summary>
+        public async Task<bool> SendAsync(byte[] data, string ip, int port, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (_client == null)
+                    return false;
+
+                var endPoint = new IPEndPoint(IPAddress.Parse(ip), port);
+                await _client.SendAsync(data, data.Length, endPoint);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 비동기 데이터 수신
+        /// </summary>
+        public async Task<byte[]> ReceiveAsync(int timeout = 3000, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (_client == null)
+                    return null;
+
+                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+                {
+                    cts.CancelAfter(timeout);
+
+                    var receiveTask = _client.ReceiveAsync();
+                    var completedTask = await Task.WhenAny(receiveTask, Task.Delay(timeout, cts.Token));
+
+                    if (completedTask == receiveTask)
+                    {
+                        var result = await receiveTask;
+                        return result.Buffer;
+                    }
+                }
+                return null;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 비동기 데이터 전송 후 응답 수신
+        /// </summary>
+        public async Task<byte[]> SendAndReceiveAsync(byte[] data, int timeout = 3000, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (_client == null)
+                    return null;
+
+                // 데이터 전송
+                await _client.SendAsync(data, data.Length, _remoteEndPoint);
+
+                // 응답 수신
+                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+                {
+                    cts.CancelAfter(timeout);
+
+                    var receiveTask = _client.ReceiveAsync();
+                    var completedTask = await Task.WhenAny(receiveTask, Task.Delay(timeout, cts.Token));
+
+                    if (completedTask == receiveTask)
+                    {
+                        var result = await receiveTask;
+                        return result.Buffer;
+                    }
+                }
+                return null;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 비동기 브로드캐스트 전송
+        /// </summary>
+        public async Task<bool> BroadcastAsync(byte[] data, int port, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (_client == null)
+                    return false;
+
+                _client.EnableBroadcast = true;
+                var broadcastEP = new IPEndPoint(IPAddress.Broadcast, port);
+
+                await _client.SendAsync(data, data.Length, broadcastEP);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred(ex);
+                return false;
             }
         }
 

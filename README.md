@@ -264,6 +264,143 @@ tcp.Disconnect();
 </details>
 
 <details>
+<summary><b>동기/비동기 통신 예제</b></summary>
+
+모든 통신 클래스는 **동기(Sync)** 와 **비동기(Async)** 메서드를 모두 지원합니다.
+
+### TCP Client
+
+```csharp
+var tcp = new TcpClientHelper("192.168.0.100", 8000);
+
+// ============================================
+// 동기 방식 (기존)
+// ============================================
+tcp.Connect();
+tcp.Send(data);
+byte[] response = tcp.SendAndReceive(data, timeout: 3000);
+byte[] received = tcp.Receive(timeout: 3000);
+byte[] exact = tcp.ReceiveExact(length: 100, timeout: 3000);
+tcp.Disconnect();
+
+// ============================================
+// 비동기 방식 (async/await)
+// ============================================
+await tcp.ConnectAsync();
+await tcp.SendAsync(data);
+byte[] response = await tcp.SendAndReceiveAsync(data, timeout: 3000);
+byte[] received = await tcp.ReceiveAsync(timeout: 3000);
+byte[] exact = await tcp.ReceiveExactAsync(length: 100, timeout: 3000);
+tcp.Disconnect();
+
+// CancellationToken 지원
+var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+await tcp.SendAndReceiveAsync(data, timeout: 3000, cts.Token);
+```
+
+### TCP Server
+
+```csharp
+var server = new TcpServerHelper(9000);
+server.Start();
+
+// 동기
+server.SendTo("clientId", data);
+server.SendToAll(data);
+
+// 비동기
+await server.SendToAsync("clientId", data);
+await server.SendToAllAsync(data);
+```
+
+### UDP
+
+```csharp
+var udp = new UdpHelper("192.168.0.100", 8001, 8002);
+udp.Connect();
+
+// 동기
+udp.Send(data);
+byte[] response = udp.SendAndReceive(data, timeout: 3000);
+byte[] received = udp.Receive(timeout: 3000);
+udp.Broadcast(data, port: 8001);
+
+// 비동기
+await udp.SendAsync(data);
+byte[] response = await udp.SendAndReceiveAsync(data, timeout: 3000);
+byte[] received = await udp.ReceiveAsync(timeout: 3000);
+await udp.BroadcastAsync(data, port: 8001);
+```
+
+### Serial Port
+
+```csharp
+var serial = new SerialPortHelper("COM1", 9600);
+serial.Connect();
+
+// 동기
+serial.Send(data);
+serial.Send("Hello");
+byte[] response = serial.SendAndReceive(data, timeout: 3000);
+byte[] received = serial.Receive(timeout: 3000);
+byte[] exact = serial.ReceiveExact(length: 100, timeout: 3000);
+string line = serial.ReadLine(timeout: 3000);
+
+// 비동기
+await serial.SendAsync(data);
+await serial.SendAsync("Hello");
+byte[] response = await serial.SendAndReceiveAsync(data, timeout: 3000);
+byte[] received = await serial.ReceiveAsync(timeout: 3000);
+byte[] exact = await serial.ReceiveExactAsync(length: 100, timeout: 3000);
+string line = await serial.ReadLineAsync(timeout: 3000);
+```
+
+### 비동기 사용 시 권장 패턴
+
+```csharp
+public class DeviceCommunicator
+{
+    private TcpClientHelper _tcp;
+
+    public async Task<bool> InitializeAsync()
+    {
+        _tcp = new TcpClientHelper("192.168.0.100", 8000);
+        return await _tcp.ConnectAsync();
+    }
+
+    public async Task<byte[]> SendCommandAsync(byte[] command)
+    {
+        try
+        {
+            return await _tcp.SendAndReceiveAsync(command, timeout: 5000);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"통신 오류: {ex.Message}");
+            return null;
+        }
+    }
+
+    // 여러 장비 동시 통신
+    public async Task<byte[][]> SendToMultipleAsync(byte[] command, TcpClientHelper[] clients)
+    {
+        var tasks = clients.Select(c => c.SendAndReceiveAsync(command));
+        return await Task.WhenAll(tasks);
+    }
+}
+```
+
+| 메서드 | 동기 | 비동기 |
+|--------|------|--------|
+| 연결 | `Connect()` | `ConnectAsync()` |
+| 전송 | `Send()` | `SendAsync()` |
+| 수신 | `Receive()` | `ReceiveAsync()` |
+| 전송+수신 | `SendAndReceive()` | `SendAndReceiveAsync()` |
+| 정확한 길이 수신 | `ReceiveExact()` | `ReceiveExactAsync()` |
+
+</details>
+
+<details>
 <summary><b>다중 소켓 관리 (배열/Dictionary)</b></summary>
 
 여러 설비와 동시에 통신해야 할 때 소켓을 배열이나 Dictionary로 관리할 수 있습니다.
