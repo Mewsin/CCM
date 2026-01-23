@@ -56,7 +56,7 @@
   <ItemGroup>
     <ProjectReference Include="..\IndustrialCommunication\IndustrialCommunication.csproj">
       <Project>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</Project>
-      <Name>IndustrialCommunication</Name>
+      <Name>YB</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
