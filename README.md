@@ -99,6 +99,26 @@ int affected = db.ExecuteNonQuery("UPDATE Users SET Name = @Name WHERE Id = @Id"
     MssqlHelper.CreateParameter("@Name", "홍길동"),
     MssqlHelper.CreateParameter("@Id", 1));
 
+// 저장 프로시저 호출 (결과 반환)
+DataTable dtProc = db.ExecuteProcedure("usp_GetUserList",
+    MssqlHelper.CreateParameter("@DeptId", 10));
+
+// 저장 프로시저 호출 (NonQuery)
+int procResult = db.ExecuteProcedureNonQuery("usp_UpdateUserStatus",
+    MssqlHelper.CreateParameter("@UserId", 1),
+    MssqlHelper.CreateParameter("@Status", "Active"));
+
+// 저장 프로시저 호출 (OUTPUT 파라미터)
+var parameters = new[]
+{
+    MssqlHelper.CreateParameter("@UserId", 1),
+    MssqlHelper.CreateParameter("@UserName", SqlDbType.NVarChar, null) { Direction = ParameterDirection.Output, Size = 50 },
+    MssqlHelper.CreateOutputParameter("@TotalCount", SqlDbType.Int)
+};
+db.ExecuteProcedureWithOutput("usp_GetUserInfo", parameters, out var outputValues);
+string userName = outputValues["@UserName"]?.ToString();
+int totalCount = Convert.ToInt32(outputValues["@TotalCount"]);
+
 // 트랜잭션
 db.BeginTransaction();
 try
