@@ -137,6 +137,19 @@ catch
     db.Rollback();
     throw;
 }
+
+// Bulk Insert (대량 데이터 삽입)
+DataTable bulkData = new DataTable();
+bulkData.Columns.Add("Id", typeof(int));
+bulkData.Columns.Add("Name", typeof(string));
+bulkData.Columns.Add("Value", typeof(decimal));
+
+for (int i = 0; i < 10000; i++)
+{
+    bulkData.Rows.Add(i, $"Item_{i}", i * 1.5m);
+}
+
+db.BulkInsert(bulkData, "TargetTable", batchSize: 1000);
 ```
 
 #### TCP Server
