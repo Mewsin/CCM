@@ -93,11 +93,33 @@ CCM/
 ```csharp
 using CCM.Database;
 
+// 연결 문자열로 생성
 var db = new MssqlHelper("Server=localhost;Database=TestDB;User Id=sa;Password=1234;");
 
-// SELECT
+// 또는 개별 파라미터로 생성
+var db2 = new MssqlHelper("localhost", "TestDB", "sa", "1234");
+
+// 연결 테스트
+if (db.TestConnection())
+    Console.WriteLine("연결 성공");
+
+// SELECT - DataTable 반환
 DataTable dt = db.ExecuteQuery("SELECT * FROM Users WHERE Id = @Id",
     MssqlHelper.CreateParameter("@Id", 1));
+
+// SELECT - DataSet 반환 (여러 결과셋)
+DataSet ds = db.ExecuteQueryDataSet("SELECT * FROM Users; SELECT * FROM Orders");
+
+// SELECT - Generic List 반환
+List<User> users = db.ExecuteQuery("SELECT * FROM Users", reader => new User
+{
+    Id = MssqlHelper.GetValue<int>(reader, "Id"),
+    Name = MssqlHelper.GetValue<string>(reader, "Name"),
+    Email = MssqlHelper.GetValue<string>(reader, "Email", "기본값")
+});
+
+// 단일 값 조회
+int count = db.ExecuteScalar<int>("SELECT COUNT(*) FROM Users");
 
 // INSERT/UPDATE/DELETE
 int affected = db.ExecuteNonQuery("UPDATE Users SET Name = @Name WHERE Id = @Id",
@@ -184,10 +206,80 @@ server.Stop();
 using CCM.Communication.Socket;
 
 var tcp = new TcpClientHelper("192.168.0.100", 8000);
+tcp.ConnectTimeout = 5000;  // 연결 타임아웃 설정
+tcp.AutoReconnect = true;   // 자동 재연결 활성화
+
+// 이벤트 등록 (비동기 수신 모드)
+tcp.ConnectionStateChanged += (s, e) => Console.WriteLine($"연결 상태: {e.IsConnected}");
+tcp.DataReceived += (s, e) => Console.WriteLine($"수신: {BitConverter.ToString(e.Data)}");
+tcp.ErrorOccurred += (s, e) => Console.WriteLine($"오류: {e.Message}");
+
+tcp.UseAsyncReceive = true;  // 비동기 수신 모드 활성화
 tcp.Connect();
+
+// 데이터 전송
 tcp.Send(new byte[] { 0x01, 0x02, 0x03 });
+
+// 전송 후 응답 대기 (동기)
 byte[] response = tcp.SendAndReceive(new byte[] { 0x01 }, timeout: 3000);
+
+// 지정 길이만큼 수신
+byte[] exactData = tcp.ReceiveExact(10, timeout: 3000);
+
 tcp.Disconnect();
+```
+
+#### UDP
+```csharp
+using CCM.Communication.Socket;
+
+// UDP 클라이언트 생성 (원격IP, 원격포트, 로컬포트)
+var udp = new UdpHelper("192.168.0.100", 8001, 8002);
+
+// 이벤트 등록
+udp.DataReceived += (s, e) => Console.WriteLine($"수신: {BitConverter.ToString(e.Data)}");
+
+udp.Connect();
+
+// 데이터 전송
+udp.Send(new byte[] { 0x01, 0x02, 0x03 });
+
+// 브로드캐스트 전송
+udp.SendBroadcast(new byte[] { 0xFF, 0xFF }, 8001);
+
+udp.Disconnect();
+```
+
+#### Serial Port
+```csharp
+using CCM.Communication.Serial;
+using System.IO.Ports;
+
+// 사용 가능한 포트 목록 조회
+string[] ports = SerialPortHelper.GetAvailablePorts();
+
+var serial = new SerialPortHelper
+{
+    PortName = "COM1",
+    BaudRate = 9600,
+    DataBits = 8,
+    StopBits = StopBits.One,
+    Parity = Parity.None
+};
+
+// 이벤트 등록 (비동기 수신)
+serial.DataReceived += (s, e) => Console.WriteLine($"수신: {BitConverter.ToString(e.Data)}");
+serial.UseAsyncReceive = true;
+
+serial.Connect();
+
+// 데이터 전송
+serial.Send(new byte[] { 0x01, 0x02, 0x03 });
+
+// 전송 후 응답 대기 (동기)
+byte[] response = serial.SendAndReceive(new byte[] { 0x01 }, timeout: 1000);
+
+serial.Disconnect();
 ```
 
 #### Mitsubishi PLC
@@ -197,27 +289,65 @@ using CCM.Communication.PLC;
 var plc = new MitsubishiMcProtocol("192.168.0.10", 5001);
 plc.Connect();
 
-// D100 읽기
+// D100 워드 읽기
 var result = plc.ReadWord("D", 100);
 if (result.IsSuccess)
     Console.WriteLine($"D100 = {result.Value}");
 
-// D100~D109 연속 읽기
+// D100~D109 연속 읽기 (10개)
 var words = plc.ReadWords("D", 100, 10);
+
+// M100 비트 읽기
+var bit = plc.ReadBit("M", 100);
+
+// D100 DWord(32비트) 읽기
+var dword = plc.ReadDWord("D", 100);
+
+// D100 Real(Float) 읽기
+var realValue = plc.ReadReal("D", 100);
+
+// D100에 워드 쓰기
+plc.WriteWord("D", 100, 1234);
 
 // M100 비트 쓰기
 plc.WriteBit("M", 100, true);
+
+// D100에 DWord 쓰기
+plc.WriteDWord("D", 100, 123456789);
+
+// D100에 Real(Float) 쓰기
+plc.WriteReal("D", 100, 3.14f);
 
 plc.Disconnect();
 ```
 
 #### Siemens PLC
 ```csharp
+using CCM.Communication.PLC;
+
+// CPU 타입: S7200, S7300, S7400, S71200, S71500
 var plc = new SiemensS7Protocol("192.168.0.10", S7CpuType.S71200, rack: 0, slot: 1);
 plc.Connect();
 
-// DB1.DBW0 읽기
+// DB1.DBW0 워드 읽기
 var result = plc.ReadWord("DB1", 0);
+if (result.IsSuccess)
+    Console.WriteLine($"DB1.DBW0 = {result.Value}");
+
+// DB1.DBW0~DBW18 연속 읽기 (10개)
+var words = plc.ReadWords("DB1", 0, 10);
+
+// DB1.DBX0.0 비트 읽기
+var bit = plc.ReadBit("DB1", 0);
+
+// DB1.DBD0 DWord(32비트) 읽기
+var dword = plc.ReadDWord("DB1", 0);
+
+// DB1.DBW100에 값 쓰기
+plc.WriteWord("DB1", 100, 1234);
+
+// DB1.DBX0.0 비트 쓰기
+plc.WriteBit("DB1", 0, true);
 
 plc.Disconnect();
 ```
@@ -246,17 +376,44 @@ plc.Disconnect();
 
 #### Modbus
 ```csharp
+using CCM.Communication.PLC;
+using System.IO.Ports;
+
 // Modbus TCP
-var modbus = new ModbusClient("192.168.0.10", 502, slaveAddress: 1);
-modbus.Connect();
+var modbusTcp = new ModbusClient("192.168.0.10", 502, slaveAddress: 1);
+modbusTcp.Connect();
+
+// 코일 읽기 (FC01)
+var coils = modbusTcp.ReadCoils(0, 10);
+
+// 입력 레지스터 읽기 (FC04)
+var inputs = modbusTcp.ReadInputRegisters(0, 10);
 
 // 홀딩 레지스터 읽기 (FC03)
-var registers = modbus.ReadHoldingRegisters(0, 10);
+var registers = modbusTcp.ReadHoldingRegisters(0, 10);
 
-// 코일 쓰기 (FC05)
-modbus.WriteSingleCoil(0, true);
+// 단일 코일 쓰기 (FC05)
+modbusTcp.WriteSingleCoil(0, true);
 
-modbus.Disconnect();
+// 단일 레지스터 쓰기 (FC06)
+modbusTcp.WriteSingleRegister(0, 1234);
+
+// 다중 코일 쓰기 (FC15)
+modbusTcp.WriteMultipleCoils(0, new bool[] { true, false, true });
+
+// 다중 레지스터 쓰기 (FC16)
+modbusTcp.WriteMultipleRegisters(0, new short[] { 100, 200, 300 });
+
+modbusTcp.Disconnect();
+
+// Modbus RTU (시리얼)
+var modbusRtu = new ModbusClient("COM1", 9600, Parity.None, slaveAddress: 1);
+modbusRtu.Mode = ModbusMode.Rtu;
+modbusRtu.Connect();
+
+var rtuRegisters = modbusRtu.ReadHoldingRegisters(0, 10);
+
+modbusRtu.Disconnect();
 ```
 
 ## 라이선스
