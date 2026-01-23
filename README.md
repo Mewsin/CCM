@@ -54,11 +54,14 @@ Visual Studio 2019 / .NET Framework 4.7.2 기반의 산업용 통신 라이브�
 
 | 클래스 | 설명 |
 |--------|------|
+| `PlcDeviceHelper` | PLC별 디바이스 주소 상수 및 헬퍼 (Mitsubishi, Siemens, LS XGT, Modbus) |
 | `PlcMonitor` | PLC 데이터 주기적 모니터링 및 변경 감지 |
 | `RecipeManager` | 레시피 데이터 업로드/다운로드 (XML 지원) |
 | `HandshakeHelper` | PC↔PLC 명령-응답 핸드쉐이크 |
 | `AlarmManager` | 알람 비트 파싱 및 이력 관리 |
 | `ProductionLogger` | 생산 데이터 수집 및 DB 저장 |
+
+> **참고**: 모든 유틸리티 클래스는 `IPlcCommunication` 인터페이스를 사용하므로 **모든 PLC(Mitsubishi, Siemens, LS, Modbus)에서 동일하게 사용** 가능합니다. 각 PLC별 디바이스 주소 표기법은 `PlcDeviceHelper` 클래스를 참조하세요.
 
 ## 프로젝트 구조
 
@@ -85,6 +88,7 @@ CCM/
 │   │       ├── LsElectricXgt.cs
 │   │       ├── ModbusClient.cs
 │   │       └── Utilities/
+│   │           ├── PlcDeviceHelper.cs
 │   │           ├── PlcMonitor.cs
 │   │           ├── RecipeManager.cs
 │   │           ├── HandshakeHelper.cs
@@ -472,6 +476,193 @@ modbusRtu.Disconnect();
 
 ---
 
+## PLC별 디바이스 주소 가이드
+
+<details>
+<summary><b>PlcDeviceHelper (디바이스 주소 헬퍼)</b></summary>
+
+### 개념
+
+PLC마다 **디바이스 표기법이 다릅니다**. `PlcDeviceHelper` 클래스는 각 PLC 제조사별 디바이스 상수와 변환 메서드를 제공합니다.
+
+| PLC | 비트 디바이스 | 워드 디바이스 |
+|-----|--------------|--------------|
+| **Mitsubishi** | X, Y, M, B, L | D, W, R |
+| **Siemens** | I, Q, M (바이트.비트) | DB (바이트 오프셋) |
+| **LS XGT** | %IX, %QX, %MX | %DW, %MW |
+| **Modbus** | Coil (0xxxxx) | Holding Register (4xxxxx) |
+
+### Mitsubishi MELSEC
+
+```csharp
+using CCM.Communication.PLC.Utilities;
+using static CCM.Communication.PLC.Utilities.PlcDeviceHelper;
+
+// ============================================
+// Mitsubishi 디바이스 상수 사용
+// ============================================
+
+var plc = new MitsubishiMcProtocol("192.168.0.10", 5001);
+plc.Connect();
+
+var monitor = new PlcMonitor(plc);
+
+// 상수 사용 (권장)
+monitor.AddWord("현재생산수량", Mitsubishi.D, 100);     // D100
+monitor.AddWord("목표생산수량", Mitsubishi.D, 101);     // D101
+monitor.AddBit("운전중", Mitsubishi.M, 0);              // M0
+monitor.AddBit("이상발생", Mitsubishi.M, 100);          // M100
+
+// 직접 문자열 사용도 가능
+monitor.AddWord("온도", "D", 200);
+monitor.AddBit("입력신호", "X", 0);    // 8진수: X0, X1, ..., X7, X10, ...
+monitor.AddBit("출력신호", "Y", 0);
+
+// 디바이스 정보 조회
+var info = Mitsubishi.GetDeviceInfo("D");
+Console.WriteLine($"{info.Description}, 비트: {info.IsBitDevice}, 형식: {info.AddressFormat}");
+// 출력: 데이터 레지스터, 비트: False, 형식: 10진수
+
+monitor.Start();
+```
+
+### Siemens S7
+
+```csharp
+using CCM.Communication.PLC.Utilities;
+using static CCM.Communication.PLC.Utilities.PlcDeviceHelper;
+
+// ============================================
+// Siemens S7 디바이스 (바이트 기반 주소)
+// ============================================
+
+var plc = new SiemensS7Protocol("192.168.0.10", S7CpuType.S71200);
+plc.Connect();
+
+var monitor = new PlcMonitor(plc);
+
+// DB (Data Block) 사용 - 가장 일반적
+// DB1.DBW0 (바이트 오프셋 0부터 워드 읽기)
+monitor.AddWord("설비상태", Siemens.FormatDb(1), 0);    // "DB1", 주소 0
+
+// DB1.DBD10 (바이트 오프셋 10부터 DWord 읽기)
+monitor.AddItem(new MonitorItem {
+    Name = "생산수량",
+    Device = Siemens.FormatDb(1),  // "DB1"
+    Address = 10,                   // 바이트 오프셋 10
+    DataType = MonitorDataType.DWord
+});
+
+// M 영역 (Merker/Flag)
+// M0.0 비트 = 비트주소 0
+monitor.AddBit("시작버튼", Siemens.M, Siemens.ToBitAddress(0, 0));  // M0.0 → 비트 0
+
+// M10.5 비트 = 비트주소 85 (10*8 + 5)
+monitor.AddBit("정지버튼", Siemens.M, Siemens.ToBitAddress(10, 5)); // M10.5 → 비트 85
+
+// I/Q 영역 (입출력)
+monitor.AddBit("입력0", Siemens.I, Siemens.ToBitAddress(0, 0));  // I0.0
+monitor.AddBit("출력0", Siemens.Q, Siemens.ToBitAddress(0, 0));  // Q0.0
+
+// 비트 주소 역변환
+var (byteOff, bitOff) = Siemens.FromBitAddress(85);
+Console.WriteLine($"비트 85 = M{byteOff}.{bitOff}");  // M10.5
+
+monitor.Start();
+```
+
+### LS Electric XGT
+
+```csharp
+using CCM.Communication.PLC.Utilities;
+using static CCM.Communication.PLC.Utilities.PlcDeviceHelper;
+
+// ============================================
+// LS XGT 디바이스 (%MW, %DW 형식)
+// ============================================
+
+var plc = new LsElectricXgt("192.168.0.10", 2004);
+plc.Connect();
+
+var monitor = new PlcMonitor(plc);
+
+// 워드 디바이스 (내부적으로 %MW100 형식으로 변환됨)
+monitor.AddWord("생산수량", LsXgt.M, 100);    // → %MW100
+monitor.AddWord("데이터", LsXgt.D, 0);        // → %DW0
+
+// 비트 디바이스
+monitor.AddBit("운전중", LsXgt.M, 0);          // → %MX0
+monitor.AddBit("입력0", LsXgt.I, 0);           // → %IX0
+monitor.AddBit("출력0", LsXgt.Q, 0);           // → %QX0
+
+// XGT 주소 형식 문자열 생성
+string addr1 = LsXgt.FormatAddress("M", 100, isBit: false);  // "%MW100"
+string addr2 = LsXgt.FormatAddress("M", 0, isBit: true);     // "%MX0"
+Console.WriteLine($"워드: {addr1}, 비트: {addr2}");
+
+// 디바이스 정보
+var info = LsXgt.GetDeviceInfo("M");
+Console.WriteLine($"{info.Description}, 형식: {info.AddressFormat}");
+// 출력: 내부 릴레이/메모리, 형식: %MX 또는 %MW
+
+monitor.Start();
+```
+
+### Modbus
+
+```csharp
+using CCM.Communication.PLC.Utilities;
+using static CCM.Communication.PLC.Utilities.PlcDeviceHelper;
+
+// ============================================
+// Modbus (device 파라미터 무시, 주소만 사용)
+// ============================================
+
+var plc = new ModbusClient("192.168.0.10", 502, slaveAddress: 1);
+plc.Connect();
+
+var monitor = new PlcMonitor(plc);
+
+// Modbus에서는 device 파라미터가 무시됨 (빈 문자열 또는 아무 값)
+// 주소는 0-based로 직접 지정
+
+// Holding Register (FC03) - 40001~
+monitor.AddWord("레지스터0", "", 0);           // 40001 → 주소 0
+monitor.AddWord("레지스터100", "", 100);       // 40101 → 주소 100
+
+// Coil (FC01) - 00001~
+monitor.AddBit("코일0", "", 0);                // 00001 → 주소 0
+monitor.AddBit("코일10", "", 10);              // 00011 → 주소 10
+
+// Modbus 문서 주소를 0-based로 변환
+int addr1 = Modbus.FromModbusAddress(40001);   // 0
+int addr2 = Modbus.FromModbusAddress(40101);   // 100
+int addr3 = Modbus.FromModbusAddress(30001);   // 0 (Input Register)
+
+Console.WriteLine($"40001 → {addr1}, 40101 → {addr2}, 30001 → {addr3}");
+
+// 0-based 주소를 Modbus 표기로 변환
+int mbAddr = Modbus.ToModbusAddress(100, 3);   // FC03 → 40101
+Console.WriteLine($"0-based 100 (FC03) → {mbAddr}");
+
+monitor.Start();
+```
+
+### 디바이스 비교 표
+
+| 항목 | Mitsubishi | Siemens | LS XGT | Modbus |
+|------|-----------|---------|--------|--------|
+| 워드 0 | D0 | DB1.DBW0 | %MW0 | 40001 (주소 0) |
+| 워드 100 | D100 | DB1.DBW100 | %MW100 | 40101 (주소 100) |
+| 비트 0 | M0 | M0.0 (비트 0) | %MX0 | 00001 (주소 0) |
+| 비트 8 | M8 | M1.0 (비트 8) | %MX8 | 00009 (주소 8) |
+| 입력 | X0 | I0.0 | %IX0 | 10001 (FC02) |
+| 출력 | Y0 | Q0.0 | %QX0 | 00001 (FC05) |
+
+</details>
+
+---
+
 ## PLC 유틸리티 상세 가이드
 
 <details>
@@ -611,6 +802,51 @@ monitor.PollOnce();
 // 모니터링 중지
 monitor.Stop();
 monitor.Dispose();
+```
+
+### 각 PLC별 사용 예제
+
+```csharp
+using CCM.Communication.PLC;
+using CCM.Communication.PLC.Utilities;
+using static CCM.Communication.PLC.Utilities.PlcDeviceHelper;
+
+// ============================================
+// Siemens S7 PLC
+// ============================================
+var siemensPlc = new SiemensS7Protocol("192.168.0.10", S7CpuType.S71200);
+siemensPlc.Connect();
+
+var siemensMonitor = new PlcMonitor(siemensPlc);
+siemensMonitor.AddWord("온도", Siemens.FormatDb(1), 0);           // DB1.DBW0
+siemensMonitor.AddWord("압력", Siemens.FormatDb(1), 2);           // DB1.DBW2
+siemensMonitor.AddBit("운전중", Siemens.M, Siemens.ToBitAddress(0, 0));  // M0.0
+siemensMonitor.Start();
+
+// ============================================
+// LS Electric XGT PLC
+// ============================================
+var lsPlc = new LsElectricXgt("192.168.0.20", 2004);
+lsPlc.Connect();
+
+var lsMonitor = new PlcMonitor(lsPlc);
+lsMonitor.AddWord("생산수량", LsXgt.D, 100);    // %DW100
+lsMonitor.AddWord("목표수량", LsXgt.D, 101);    // %DW101
+lsMonitor.AddBit("운전신호", LsXgt.M, 0);       // %MX0
+lsMonitor.Start();
+
+// ============================================
+// Modbus TCP
+// ============================================
+var modbusPlc = new ModbusClient("192.168.0.30", 502, slaveAddress: 1);
+modbusPlc.Connect();
+
+var modbusMonitor = new PlcMonitor(modbusPlc);
+// Modbus는 device 무시, 주소만 사용 (0-based)
+modbusMonitor.AddWord("레지스터0", "", 0);      // 40001
+modbusMonitor.AddWord("레지스터10", "", 10);    // 40011
+modbusMonitor.AddBit("코일0", "", 0);           // 00001
+modbusMonitor.Start();
 ```
 
 ### 데이터 타입

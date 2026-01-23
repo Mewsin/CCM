@@ -49,6 +49,7 @@
     <Compile Include="Communication\PLC\SiemensS7Protocol.cs" />
     <Compile Include="Communication\PLC\LsElectricXgt.cs" />
     <Compile Include="Communication\PLC\ModbusClient.cs" />
+    <Compile Include="Communication\PLC\Utilities\PlcDeviceHelper.cs" />
     <Compile Include="Communication\PLC\Utilities\PlcMonitor.cs" />
     <Compile Include="Communication\PLC\Utilities\RecipeManager.cs" />
     <Compile Include="Communication\PLC\Utilities\HandshakeHelper.cs" />
