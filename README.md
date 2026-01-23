@@ -264,6 +264,114 @@ tcp.Disconnect();
 </details>
 
 <details>
+<summary><b>다중 소켓 관리 (배열/Dictionary)</b></summary>
+
+여러 설비와 동시에 통신해야 할 때 소켓을 배열이나 Dictionary로 관리할 수 있습니다.
+
+### 1. 배열 방식 (고정 개수)
+
+```csharp
+// 클라이언트 5개 고정
+TcpClientHelper[] clients = new TcpClientHelper[5];
+
+for (int i = 0; i < 5; i++)
+{
+    clients[i] = new TcpClientHelper($"192.168.0.{10 + i}", 8000);
+    clients[i].Connect();
+}
+
+// 사용
+clients[0].Send(data);
+clients[2].SendAndReceive(data);
+```
+
+### 2. Dictionary 방식 (권장 - 이름으로 관리)
+
+```csharp
+Dictionary<string, TcpClientHelper> clients = new Dictionary<string, TcpClientHelper>();
+
+// 설비별로 추가
+clients["설비A"] = new TcpClientHelper("192.168.0.10", 8000);
+clients["설비B"] = new TcpClientHelper("192.168.0.11", 8000);
+clients["검사기"] = new TcpClientHelper("192.168.0.20", 9000);
+
+// 전체 연결
+foreach (var client in clients.Values)
+    client.Connect();
+
+// 사용
+clients["설비A"].Send(data);
+clients["검사기"].SendAndReceive(data);
+```
+
+### 3. List 방식 (동적 추가/제거)
+
+```csharp
+List<TcpClientHelper> clients = new List<TcpClientHelper>();
+
+// 동적 추가
+clients.Add(new TcpClientHelper("192.168.0.10", 8000));
+clients.Add(new TcpClientHelper("192.168.0.11", 8000));
+
+// 전체 전송
+foreach (var client in clients)
+{
+    if (client.IsConnected)
+        client.Send(data);
+}
+```
+
+### 4. 실전 예시: 소켓 매니저 클래스
+
+```csharp
+public class SocketManager : IDisposable
+{
+    private Dictionary<string, TcpClientHelper> _clients = new Dictionary<string, TcpClientHelper>();
+
+    public void Add(string name, string ip, int port)
+    {
+        var client = new TcpClientHelper(ip, port);
+        client.AutoReconnect = true;
+        _clients[name] = client;
+    }
+
+    public void ConnectAll()
+    {
+        foreach (var client in _clients.Values)
+            client.Connect();
+    }
+
+    public TcpClientHelper this[string name] => _clients[name];
+
+    public void SendToAll(byte[] data)
+    {
+        foreach (var client in _clients.Values)
+            if (client.IsConnected) client.Send(data);
+    }
+
+    public void Dispose()
+    {
+        foreach (var client in _clients.Values)
+            client.Dispose();
+    }
+}
+
+// 사용
+var sockets = new SocketManager();
+sockets.Add("라인1", "192.168.0.10", 8000);
+sockets.Add("라인2", "192.168.0.11", 8000);
+sockets.Add("라인3", "192.168.0.12", 8000);
+sockets.ConnectAll();
+
+sockets["라인1"].Send(data);
+sockets.SendToAll(broadcastData);
+```
+
+> **Tip**: Dictionary가 이름으로 접근 가능해서 실무에서 가장 편리합니다.
+
+</details>
+
+<details>
 <summary><b>UDP</b></summary>
 
 ```csharp
