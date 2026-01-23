@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Net.Sockets;
 using System.Threading;
-using IndustrialCommunication.Communication.Interfaces;
+using CCM.Communication.Interfaces;
 
-namespace IndustrialCommunication.Communication.PLC
+namespace CCM.Communication.PLC
 {
     /// <summary>
     /// Modbus 통신 클래스 (TCP/RTU 지원)

@@ -4,14 +4,14 @@ using System.Drawing;
 using System.IO.Ports;
 using System.Text;
 using System.Windows.Forms;
-using IndustrialCommunication.Communication.Interfaces;
-using IndustrialCommunication.Communication.PLC;
-using IndustrialCommunication.Communication.Serial;
-using IndustrialCommunication.Communication.Socket;
-using IndustrialCommunication.Database;
+using CCM.Communication.Interfaces;
+using CCM.Communication.PLC;
+using CCM.Communication.Serial;
+using CCM.Communication.Socket;
+using CCM.Database;
 using System.Linq;
 
-namespace IndustrialCommunication.Example
+namespace CCM.Example
 {
     public partial class MainForm : Form
     {

@@ -1,11 +1,11 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("IndustrialCommunication")]
-[assembly: AssemblyDescription("Industrial Communication Library for DB, Socket, Serial, and PLC")]
+[assembly: AssemblyTitle("CCM")]
+[assembly: AssemblyDescription("Common Communication Module - Library for DB, Socket, Serial, and PLC")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("IndustrialCommunication")]
+[assembly: AssemblyProduct("CCM")]
 [assembly: AssemblyCopyright("Copyright © 2024")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

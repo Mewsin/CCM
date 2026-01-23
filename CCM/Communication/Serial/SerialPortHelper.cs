@@ -1,9 +1,9 @@
 using System;
 using System.IO.Ports;
 using System.Threading;
-using IndustrialCommunication.Communication.Interfaces;
+using CCM.Communication.Interfaces;
 
-namespace IndustrialCommunication.Communication.Serial
+namespace CCM.Communication.Serial
 {
     /// <summary>
     /// 시리얼 포트 통신 헬퍼 클래스

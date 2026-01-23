@@ -2,9 +2,9 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using IndustrialCommunication.Communication.Interfaces;
+using CCM.Communication.Interfaces;
 
-namespace IndustrialCommunication.Communication.Socket
+namespace CCM.Communication.Socket
 {
     /// <summary>
     /// UDP 통신 헬퍼 클래스

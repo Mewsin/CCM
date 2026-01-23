@@ -1,6 +1,6 @@
 using System;
 
-namespace IndustrialCommunication.Communication.Interfaces
+namespace CCM.Communication.Interfaces
 {
     /// <summary>
     /// 통신 상태 변경 이벤트 인자

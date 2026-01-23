@@ -1,8 +1,8 @@
 using System;
 using System.Text;
-using IndustrialCommunication.Communication.Interfaces;
+using CCM.Communication.Interfaces;
 
-namespace IndustrialCommunication.Communication.PLC
+namespace CCM.Communication.PLC
 {
     /// <summary>
     /// PLC 통신 기본 추상 클래스

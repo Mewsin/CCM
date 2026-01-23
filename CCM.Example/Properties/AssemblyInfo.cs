@@ -1,11 +1,11 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("IndustrialCommunication.Example")]
-[assembly: AssemblyDescription("Example WinForms Application for IndustrialCommunication Library")]
+[assembly: AssemblyTitle("CCM.Example")]
+[assembly: AssemblyDescription("Example WinForms Application for CCM Library")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("IndustrialCommunication.Example")]
+[assembly: AssemblyProduct("CCM.Example")]
 [assembly: AssemblyCopyright("Copyright © 2024")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

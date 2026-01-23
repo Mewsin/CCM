@@ -1,6 +1,6 @@
-# YBComm (YB.dll)
+# CCM (Common Communication Module)
 
-산업용 통신 라이브러리 - MSSQL, Socket, Serial, PLC 통신을 위한 C# DLL
+공통 통신 모듈 - MSSQL, Socket, Serial, PLC 통신을 위한 C# DLL
 
 ## 개요
 
@@ -53,9 +53,9 @@ Visual Studio 2019 / .NET Framework 4.7.2 기반의 산업용 통신 라이브�
 ## 프로젝트 구조
 
 ```
-YBComm/
-├── IndustrialCommunication.sln
-├── IndustrialCommunication/           # DLL 프로젝트 (YB.dll)
+CCM/
+├── CCM.sln
+├── CCM/                            # DLL 프로젝트 (CCM.dll)
 │   ├── Database/
 │   │   └── MssqlHelper.cs
 │   ├── Communication/
@@ -75,7 +75,7 @@ YBComm/
 │   │       ├── LsElectricXgt.cs
 │   │       └── ModbusClient.cs
 │   └── Properties/
-└── IndustrialCommunication.Example/   # WinForm 예제
+└── CCM.Example/                    # WinForm 예제
     ├── MainForm.cs
     └── Program.cs
 ```
@@ -83,15 +83,15 @@ YBComm/
 ## 사용 방법
 
 ### 빌드
-1. Visual Studio 2019에서 `IndustrialCommunication.sln` 열기
+1. Visual Studio 2019에서 `CCM.sln` 열기
 2. Release 모드로 빌드
-3. `IndustrialCommunication\bin\Release\YB.dll` 생성됨
+3. `CCM\bin\Release\CCM.dll` 생성됨
 
 ### 예제 코드
 
 #### MSSQL
 ```csharp
-using IndustrialCommunication.Database;
+using CCM.Database;
 
 var db = new MssqlHelper("Server=localhost;Database=TestDB;User Id=sa;Password=1234;");
 
@@ -141,7 +141,7 @@ catch
 
 #### TCP Server
 ```csharp
-using IndustrialCommunication.Communication.Socket;
+using CCM.Communication.Socket;
 
 var server = new TcpServerHelper(9000);
 
@@ -168,7 +168,7 @@ server.Stop();
 
 #### TCP Client
 ```csharp
-using IndustrialCommunication.Communication.Socket;
+using CCM.Communication.Socket;
 
 var tcp = new TcpClientHelper("192.168.0.100", 8000);
 tcp.Connect();
@@ -179,7 +179,7 @@ tcp.Disconnect();
 
 #### Mitsubishi PLC
 ```csharp
-using IndustrialCommunication.Communication.PLC;
+using CCM.Communication.PLC;
 
 var plc = new MitsubishiMcProtocol("192.168.0.10", 5001);
 plc.Connect();

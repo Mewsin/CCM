@@ -1,4 +1,4 @@
-namespace IndustrialCommunication.Example
+namespace CCM.Example
 {
     partial class MainForm
     {

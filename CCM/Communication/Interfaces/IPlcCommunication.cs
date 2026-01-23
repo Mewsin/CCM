@@ -1,6 +1,6 @@
 using System;
 
-namespace IndustrialCommunication.Communication.Interfaces
+namespace CCM.Communication.Interfaces
 {
     /// <summary>
     /// PLC 디바이스 타입

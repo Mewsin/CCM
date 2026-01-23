@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace IndustrialCommunication.Example
+namespace CCM.Example
 {
     static class Program
     {

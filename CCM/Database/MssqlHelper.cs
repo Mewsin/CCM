@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
-namespace IndustrialCommunication.Database
+namespace CCM.Database
 {
     /// <summary>
     /// MSSQL 데이터베이스 헬퍼 클래스

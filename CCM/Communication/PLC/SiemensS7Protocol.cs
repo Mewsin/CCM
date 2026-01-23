@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using IndustrialCommunication.Communication.Interfaces;
+using CCM.Communication.Interfaces;
 
-namespace IndustrialCommunication.Communication.PLC
+namespace CCM.Communication.PLC
 {
     /// <summary>
     /// Siemens PLC S7 Protocol 통신 클래스
