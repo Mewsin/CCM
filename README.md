@@ -209,6 +209,28 @@ var result = plc.ReadWord("DB1", 0);
 plc.Disconnect();
 ```
 
+#### LS Electric XGT
+```csharp
+var plc = new LsElectricXgt("192.168.0.10", 2004);
+plc.Connect();
+
+// %MW100 워드 읽기
+var result = plc.ReadWord("%MW", 100);
+if (result.IsSuccess)
+    Console.WriteLine($"%MW100 = {result.Value}");
+
+// %MW100~%MW109 연속 읽기
+var words = plc.ReadWords("%MW", 100, 10);
+
+// %MX100 비트 쓰기
+plc.WriteBit("%MX", 100, true);
+
+// %MW100에 값 쓰기
+plc.WriteWord("%MW", 100, 1234);
+
+plc.Disconnect();
+```
+
 #### Modbus
 ```csharp
 // Modbus TCP
