@@ -9,6 +9,7 @@ using IndustrialCommunication.Communication.PLC;
 using IndustrialCommunication.Communication.Serial;
 using IndustrialCommunication.Communication.Socket;
 using IndustrialCommunication.Database;
+using System.Linq;
 
 namespace IndustrialCommunication.Example
 {
@@ -20,6 +21,7 @@ namespace IndustrialCommunication.Example
         private TcpClientHelper _tcpClient;
         private UdpHelper _udpClient;
         private SerialPortHelper _serialPort;
+        private TcpServerHelper _tcpServer;
         private MitsubishiMcProtocol _mitsubishiPlc;
         private SiemensS7Protocol _siemensPlc;
         private LsElectricXgt _lsPlc;
@@ -69,6 +71,7 @@ namespace IndustrialCommunication.Example
             // 모든 연결 해제
             _dbHelper?.Dispose();
             _tcpClient?.Dispose();
+            _tcpServer?.Dispose();
             _udpClient?.Dispose();
             _serialPort?.Dispose();
             _mitsubishiPlc?.Dispose();
@@ -192,6 +195,129 @@ namespace IndustrialCommunication.Example
                 AppendLog($"[DB] 프로시저 오류: {ex.Message}");
                 MessageBox.Show(ex.Message, "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        #endregion
+
+        #region TCP Server
+
+        private void btnTcpServerStart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _tcpServer = new TcpServerHelper((int)numTcpServerPort.Value);
+                _tcpServer.ServerStateChanged += (s, args) =>
+                {
+                    this.Invoke((Action)(() =>
+                    {
+                        lblTcpServerStatus.Text = args.IsConnected ? "실행 중" : "중지됨";
+                        lblTcpServerStatus.ForeColor = args.IsConnected ? Color.Green : Color.Gray;
+                    }));
+                };
+                _tcpServer.ClientConnected += (s, args) =>
+                {
+                    this.Invoke((Action)(() =>
+                    {
+                        lstTcpServerClients.Items.Add($"{args.ClientId} ({args.ClientEndPoint})");
+                        AppendLog($"[TCP Server] 클라이언트 연결: {args.ClientId} ({args.ClientEndPoint})");
+                    }));
+                };
+                _tcpServer.ClientDisconnected += (s, args) =>
+                {
+                    this.Invoke((Action)(() =>
+                    {
+                        for (int i = lstTcpServerClients.Items.Count - 1; i >= 0; i--)
+                        {
+                            if (lstTcpServerClients.Items[i].ToString().StartsWith(args.ClientId))
+                            {
+                                lstTcpServerClients.Items.RemoveAt(i);
+                                break;
+                            }
+                        }
+                        AppendLog($"[TCP Server] 클라이언트 연결 해제: {args.ClientId}");
+                    }));
+                };
+                _tcpServer.ClientDataReceived += (s, args) =>
+                {
+                    this.Invoke((Action)(() =>
+                    {
+                        string hex = BitConverter.ToString(args.Data);
+                        AppendLog($"[TCP Server 수신] {args.ClientId}: {hex}");
+                    }));
+                };
+
+                if (_tcpServer.Start())
+                {
+                    AppendLog($"[TCP Server] 포트 {numTcpServerPort.Value}에서 시작됨");
+                }
+                else
+                {
+                    AppendLog("[TCP Server] 시작 실패");
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"[TCP Server] 오류: {ex.Message}");
+            }
+        }
+
+        private void btnTcpServerStop_Click(object sender, EventArgs e)
+        {
+            _tcpServer?.Stop();
+            lstTcpServerClients.Items.Clear();
+            AppendLog("[TCP Server] 중지됨");
+        }
+
+        private void btnTcpServerSend_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_tcpServer == null || !_tcpServer.IsRunning)
+                {
+                    MessageBox.Show("먼저 TCP 서버를 시작하세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                byte[] data = ParseHexString(txtTcpServerSendData.Text);
+
+                if (chkTcpServerBroadcast.Checked)
+                {
+                    _tcpServer.SendToAll(data);
+                    AppendLog($"[TCP Server 송신] 전체: {BitConverter.ToString(data)}");
+                }
+                else
+                {
+                    if (lstTcpServerClients.SelectedItem == null)
+                    {
+                        MessageBox.Show("클라이언트를 선택하세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    string selected = lstTcpServerClients.SelectedItem.ToString();
+                    string clientId = selected.Split(' ')[0];
+                    if (_tcpServer.SendTo(clientId, data))
+                    {
+                        AppendLog($"[TCP Server 송신] {clientId}: {BitConverter.ToString(data)}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"[TCP Server] 송신 오류: {ex.Message}");
+            }
+        }
+
+        private void btnTcpServerDisconnectClient_Click(object sender, EventArgs e)
+        {
+            if (lstTcpServerClients.SelectedItem == null)
+            {
+                MessageBox.Show("연결 해제할 클라이언트를 선택하세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string selected = lstTcpServerClients.SelectedItem.ToString();
+            string clientId = selected.Split(' ')[0];
+            _tcpServer?.DisconnectClient(clientId);
         }
 
         #endregion

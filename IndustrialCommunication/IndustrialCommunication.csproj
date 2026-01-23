@@ -41,6 +41,7 @@
     <Compile Include="Communication\Interfaces\ICommunication.cs" />
     <Compile Include="Communication\Interfaces\IPlcCommunication.cs" />
     <Compile Include="Communication\Socket\TcpClientHelper.cs" />
+    <Compile Include="Communication\Socket\TcpServerHelper.cs" />
     <Compile Include="Communication\Socket\UdpHelper.cs" />
     <Compile Include="Communication\Serial\SerialPortHelper.cs" />
     <Compile Include="Communication\PLC\PlcBase.cs" />

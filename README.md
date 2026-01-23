@@ -18,6 +18,10 @@ Visual Studio 2019 / .NET Framework 4.7.2 기반의 산업용 통신 라이브�
 - Bulk Insert
 
 ### 2. Socket 통신
+- **TcpServerHelper**: TCP 서버
+  - 멀티 클라이언트 지원
+  - 클라이언트 연결/해제 이벤트
+  - 개별/전체 브로드캐스트 전송
 - **TcpClientHelper**: TCP 클라이언트
   - 연결/해제, 자동 재연결
   - 동기/비동기 송수신
@@ -59,6 +63,7 @@ YBComm/
 │   │   │   ├── ICommunication.cs
 │   │   │   └── IPlcCommunication.cs
 │   │   ├── Socket/
+│   │   │   ├── TcpServerHelper.cs
 │   │   │   ├── TcpClientHelper.cs
 │   │   │   └── UdpHelper.cs
 │   │   ├── Serial/
@@ -132,6 +137,33 @@ catch
     db.Rollback();
     throw;
 }
+```
+
+#### TCP Server
+```csharp
+using IndustrialCommunication.Communication.Socket;
+
+var server = new TcpServerHelper(9000);
+
+// 이벤트 등록
+server.ClientConnected += (s, e) => Console.WriteLine($"클라이언트 연결: {e.ClientId}");
+server.ClientDisconnected += (s, e) => Console.WriteLine($"클라이언트 해제: {e.ClientId}");
+server.ClientDataReceived += (s, e) => Console.WriteLine($"수신 [{e.ClientId}]: {BitConverter.ToString(e.Data)}");
+
+// 서버 시작
+server.Start();
+
+// 특정 클라이언트에게 전송
+server.SendTo("clientId", new byte[] { 0x01, 0x02, 0x03 });
+
+// 모든 클라이언트에게 브로드캐스트
+server.SendToAll(new byte[] { 0x01, 0x02, 0x03 });
+
+// 클라이언트 연결 해제
+server.DisconnectClient("clientId");
+
+// 서버 중지
+server.Stop();
 ```
 
 #### TCP Client

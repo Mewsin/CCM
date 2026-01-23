@@ -39,6 +39,19 @@ namespace IndustrialCommunication.Example
             this.btnDbExecuteProcedure = new System.Windows.Forms.Button();
             this.dgvDbResult = new System.Windows.Forms.DataGridView();
 
+            // TCP Server Controls
+            this.grpTcpServer = new System.Windows.Forms.GroupBox();
+            this.lblTcpServerPort = new System.Windows.Forms.Label();
+            this.numTcpServerPort = new System.Windows.Forms.NumericUpDown();
+            this.btnTcpServerStart = new System.Windows.Forms.Button();
+            this.btnTcpServerStop = new System.Windows.Forms.Button();
+            this.lblTcpServerStatus = new System.Windows.Forms.Label();
+            this.lstTcpServerClients = new System.Windows.Forms.ListBox();
+            this.txtTcpServerSendData = new System.Windows.Forms.TextBox();
+            this.btnTcpServerSend = new System.Windows.Forms.Button();
+            this.chkTcpServerBroadcast = new System.Windows.Forms.CheckBox();
+            this.btnTcpServerDisconnectClient = new System.Windows.Forms.Button();
+
             // TCP Controls
             this.grpTcp = new System.Windows.Forms.GroupBox();
             this.txtTcpIp = new System.Windows.Forms.TextBox();
@@ -131,6 +144,8 @@ namespace IndustrialCommunication.Example
             this.grpDbConnection.SuspendLayout();
             this.grpDbQuery.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDbResult)).BeginInit();
+            this.grpTcpServer.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numTcpServerPort)).BeginInit();
             this.grpTcp.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numTcpPort)).BeginInit();
             this.grpUdp.SuspendLayout();
@@ -324,6 +339,7 @@ namespace IndustrialCommunication.Example
             // 
             // tabSocket
             // 
+            this.tabSocket.Controls.Add(this.grpTcpServer);
             this.tabSocket.Controls.Add(this.grpTcp);
             this.tabSocket.Controls.Add(this.grpUdp);
             this.tabSocket.Location = new System.Drawing.Point(4, 22);
@@ -333,6 +349,132 @@ namespace IndustrialCommunication.Example
             this.tabSocket.TabIndex = 1;
             this.tabSocket.Text = "Socket (TCP/UDP)";
             this.tabSocket.UseVisualStyleBackColor = true;
+
+            // 
+            // grpTcpServer
+            // 
+            this.grpTcpServer.Controls.Add(this.lblTcpServerPort);
+            this.grpTcpServer.Controls.Add(this.numTcpServerPort);
+            this.grpTcpServer.Controls.Add(this.btnTcpServerStart);
+            this.grpTcpServer.Controls.Add(this.btnTcpServerStop);
+            this.grpTcpServer.Controls.Add(this.lblTcpServerStatus);
+            this.grpTcpServer.Controls.Add(this.lstTcpServerClients);
+            this.grpTcpServer.Controls.Add(this.txtTcpServerSendData);
+            this.grpTcpServer.Controls.Add(this.btnTcpServerSend);
+            this.grpTcpServer.Controls.Add(this.chkTcpServerBroadcast);
+            this.grpTcpServer.Controls.Add(this.btnTcpServerDisconnectClient);
+            this.grpTcpServer.Location = new System.Drawing.Point(6, 6);
+            this.grpTcpServer.Name = "grpTcpServer";
+            this.grpTcpServer.Size = new System.Drawing.Size(980, 130);
+            this.grpTcpServer.TabIndex = 0;
+            this.grpTcpServer.TabStop = false;
+            this.grpTcpServer.Text = "TCP Server";
+
+            // 
+            // lblTcpServerPort
+            // 
+            this.lblTcpServerPort.AutoSize = true;
+            this.lblTcpServerPort.Location = new System.Drawing.Point(10, 25);
+            this.lblTcpServerPort.Name = "lblTcpServerPort";
+            this.lblTcpServerPort.Size = new System.Drawing.Size(27, 12);
+            this.lblTcpServerPort.TabIndex = 0;
+            this.lblTcpServerPort.Text = "Port";
+
+            // 
+            // numTcpServerPort
+            // 
+            this.numTcpServerPort.Location = new System.Drawing.Point(50, 22);
+            this.numTcpServerPort.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+            this.numTcpServerPort.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            this.numTcpServerPort.Name = "numTcpServerPort";
+            this.numTcpServerPort.Size = new System.Drawing.Size(80, 21);
+            this.numTcpServerPort.TabIndex = 1;
+            this.numTcpServerPort.Value = new decimal(new int[] { 9000, 0, 0, 0 });
+
+            // 
+            // btnTcpServerStart
+            // 
+            this.btnTcpServerStart.Location = new System.Drawing.Point(140, 20);
+            this.btnTcpServerStart.Name = "btnTcpServerStart";
+            this.btnTcpServerStart.Size = new System.Drawing.Size(75, 23);
+            this.btnTcpServerStart.TabIndex = 2;
+            this.btnTcpServerStart.Text = "시작";
+            this.btnTcpServerStart.UseVisualStyleBackColor = true;
+            this.btnTcpServerStart.Click += new System.EventHandler(this.btnTcpServerStart_Click);
+
+            // 
+            // btnTcpServerStop
+            // 
+            this.btnTcpServerStop.Location = new System.Drawing.Point(221, 20);
+            this.btnTcpServerStop.Name = "btnTcpServerStop";
+            this.btnTcpServerStop.Size = new System.Drawing.Size(75, 23);
+            this.btnTcpServerStop.TabIndex = 3;
+            this.btnTcpServerStop.Text = "중지";
+            this.btnTcpServerStop.UseVisualStyleBackColor = true;
+            this.btnTcpServerStop.Click += new System.EventHandler(this.btnTcpServerStop_Click);
+
+            // 
+            // lblTcpServerStatus
+            // 
+            this.lblTcpServerStatus.AutoSize = true;
+            this.lblTcpServerStatus.ForeColor = System.Drawing.Color.Gray;
+            this.lblTcpServerStatus.Location = new System.Drawing.Point(310, 25);
+            this.lblTcpServerStatus.Name = "lblTcpServerStatus";
+            this.lblTcpServerStatus.Size = new System.Drawing.Size(41, 12);
+            this.lblTcpServerStatus.TabIndex = 4;
+            this.lblTcpServerStatus.Text = "중지됨";
+
+            // 
+            // lstTcpServerClients
+            // 
+            this.lstTcpServerClients.FormattingEnabled = true;
+            this.lstTcpServerClients.ItemHeight = 12;
+            this.lstTcpServerClients.Location = new System.Drawing.Point(400, 15);
+            this.lstTcpServerClients.Name = "lstTcpServerClients";
+            this.lstTcpServerClients.Size = new System.Drawing.Size(250, 100);
+            this.lstTcpServerClients.TabIndex = 5;
+
+            // 
+            // btnTcpServerDisconnectClient
+            // 
+            this.btnTcpServerDisconnectClient.Location = new System.Drawing.Point(660, 15);
+            this.btnTcpServerDisconnectClient.Name = "btnTcpServerDisconnectClient";
+            this.btnTcpServerDisconnectClient.Size = new System.Drawing.Size(90, 23);
+            this.btnTcpServerDisconnectClient.TabIndex = 6;
+            this.btnTcpServerDisconnectClient.Text = "클라이언트 해제";
+            this.btnTcpServerDisconnectClient.UseVisualStyleBackColor = true;
+            this.btnTcpServerDisconnectClient.Click += new System.EventHandler(this.btnTcpServerDisconnectClient_Click);
+
+            // 
+            // txtTcpServerSendData
+            // 
+            this.txtTcpServerSendData.Location = new System.Drawing.Point(50, 55);
+            this.txtTcpServerSendData.Name = "txtTcpServerSendData";
+            this.txtTcpServerSendData.Size = new System.Drawing.Size(250, 21);
+            this.txtTcpServerSendData.TabIndex = 7;
+            this.txtTcpServerSendData.Text = "48 45 4C 4C 4F";
+
+            // 
+            // btnTcpServerSend
+            // 
+            this.btnTcpServerSend.Location = new System.Drawing.Point(50, 85);
+            this.btnTcpServerSend.Name = "btnTcpServerSend";
+            this.btnTcpServerSend.Size = new System.Drawing.Size(75, 23);
+            this.btnTcpServerSend.TabIndex = 8;
+            this.btnTcpServerSend.Text = "전송 (Hex)";
+            this.btnTcpServerSend.UseVisualStyleBackColor = true;
+            this.btnTcpServerSend.Click += new System.EventHandler(this.btnTcpServerSend_Click);
+
+            // 
+            // chkTcpServerBroadcast
+            // 
+            this.chkTcpServerBroadcast.AutoSize = true;
+            this.chkTcpServerBroadcast.Location = new System.Drawing.Point(140, 89);
+            this.chkTcpServerBroadcast.Name = "chkTcpServerBroadcast";
+            this.chkTcpServerBroadcast.Size = new System.Drawing.Size(108, 16);
+            this.chkTcpServerBroadcast.TabIndex = 9;
+            this.chkTcpServerBroadcast.Text = "전체 전송 (All)";
+            this.chkTcpServerBroadcast.UseVisualStyleBackColor = true;
 
             // 
             // grpTcp
@@ -346,10 +488,10 @@ namespace IndustrialCommunication.Example
             this.grpTcp.Controls.Add(this.lblTcpStatus);
             this.grpTcp.Controls.Add(this.txtTcpSendData);
             this.grpTcp.Controls.Add(this.btnTcpSend);
-            this.grpTcp.Location = new System.Drawing.Point(6, 6);
+            this.grpTcp.Location = new System.Drawing.Point(6, 142);
             this.grpTcp.Name = "grpTcp";
-            this.grpTcp.Size = new System.Drawing.Size(980, 120);
-            this.grpTcp.TabIndex = 0;
+            this.grpTcp.Size = new System.Drawing.Size(980, 100);
+            this.grpTcp.TabIndex = 1;
             this.grpTcp.TabStop = false;
             this.grpTcp.Text = "TCP Client";
 
@@ -460,10 +602,10 @@ namespace IndustrialCommunication.Example
             this.grpUdp.Controls.Add(this.lblUdpStatus);
             this.grpUdp.Controls.Add(this.txtUdpSendData);
             this.grpUdp.Controls.Add(this.btnUdpSend);
-            this.grpUdp.Location = new System.Drawing.Point(6, 132);
+            this.grpUdp.Location = new System.Drawing.Point(6, 248);
             this.grpUdp.Name = "grpUdp";
-            this.grpUdp.Size = new System.Drawing.Size(980, 120);
-            this.grpUdp.TabIndex = 1;
+            this.grpUdp.Size = new System.Drawing.Size(980, 100);
+            this.grpUdp.TabIndex = 2;
             this.grpUdp.TabStop = false;
             this.grpUdp.Text = "UDP";
 
@@ -1197,6 +1339,9 @@ namespace IndustrialCommunication.Example
             this.grpDbQuery.ResumeLayout(false);
             this.grpDbQuery.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDbResult)).EndInit();
+            this.grpTcpServer.ResumeLayout(false);
+            this.grpTcpServer.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numTcpServerPort)).EndInit();
             this.grpTcp.ResumeLayout(false);
             this.grpTcp.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numTcpPort)).EndInit();
@@ -1249,6 +1394,19 @@ namespace IndustrialCommunication.Example
         private System.Windows.Forms.Button btnDbExecuteNonQuery;
         private System.Windows.Forms.Button btnDbExecuteProcedure;
         private System.Windows.Forms.DataGridView dgvDbResult;
+
+        // TCP Server
+        private System.Windows.Forms.GroupBox grpTcpServer;
+        private System.Windows.Forms.Label lblTcpServerPort;
+        private System.Windows.Forms.NumericUpDown numTcpServerPort;
+        private System.Windows.Forms.Button btnTcpServerStart;
+        private System.Windows.Forms.Button btnTcpServerStop;
+        private System.Windows.Forms.Label lblTcpServerStatus;
+        private System.Windows.Forms.ListBox lstTcpServerClients;
+        private System.Windows.Forms.TextBox txtTcpServerSendData;
+        private System.Windows.Forms.Button btnTcpServerSend;
+        private System.Windows.Forms.CheckBox chkTcpServerBroadcast;
+        private System.Windows.Forms.Button btnTcpServerDisconnectClient;
 
         // TCP
         private System.Windows.Forms.GroupBox grpTcp;
