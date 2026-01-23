@@ -432,7 +432,48 @@ var rtuRegisters = modbusRtu.ReadHoldingRegisters(0, 10);
 modbusRtu.Disconnect();
 ```
 
-#### PLC Monitor (데이터 모니터링)
+---
+
+## PLC 유틸리티 상세 가이드
+
+---
+
+### PlcMonitor (데이터 모니터링)
+
+#### 개념
+
+PLC 데이터를 **주기적으로 읽어서 변경을 감지**하는 클래스입니다.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      PlcMonitor 동작                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   [500ms]     [500ms]     [500ms]     [500ms]              │
+│      ↓           ↓           ↓           ↓                 │
+│   ┌─────┐    ┌─────┐    ┌─────┐    ┌─────┐               │
+│   │READ │    │READ │    │READ │    │READ │  ← PLC 폴링   │
+│   │D100 │    │D100 │    │D100 │    │D100 │               │
+│   │=100 │    │=100 │    │=150 │    │=150 │               │
+│   └─────┘    └─────┘    └──┬──┘    └─────┘               │
+│                            │                               │
+│                            ↓                               │
+│                    DataChanged 이벤트!                     │
+│                    "D100: 100 → 150"                       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 사용 상황
+
+| 상황 | 설명 |
+|------|------|
+| 실시간 모니터링 화면 | 온도, 압력, 속도 등을 UI에 표시 |
+| 상태 변경 감지 | 운전/정지 상태, 알람 발생 등 |
+| 데이터 로깅 트리거 | 값이 바뀔 때만 기록 |
+
+#### 예제 코드
+
 ```csharp
 using CCM.Communication.PLC;
 using CCM.Communication.PLC.Utilities;
@@ -440,37 +481,94 @@ using CCM.Communication.PLC.Utilities;
 var plc = new MitsubishiMcProtocol("192.168.0.10", 5001);
 plc.Connect();
 
+// ============================================
+// 1. 모니터 생성 및 설정
+// ============================================
 var monitor = new PlcMonitor(plc)
 {
-    PollingInterval = 500  // 500ms 주기
+    PollingInterval = 500,     // 500ms마다 PLC 읽기
+    ContinueOnError = true     // 에러 발생해도 계속 모니터링
 };
 
-// 모니터링 항목 추가
-monitor.AddWord("Temperature", "D", 100);
-monitor.AddWord("Pressure", "D", 101);
-monitor.AddBit("Running", "M", 100);
-monitor.AddWords("ProductData", "D", 200, 10);
+// ============================================
+// 2. 모니터링 항목 추가
+// ============================================
 
-// 변경 감지 이벤트
+// 개별 워드 모니터링
+monitor.AddWord("Temperature", "D", 100);   // D100: 온도
+monitor.AddWord("Pressure", "D", 101);      // D101: 압력
+
+// 비트 모니터링
+monitor.AddBit("Running", "M", 100);        // M100: 운전 중 여부
+
+// 연속 워드 모니터링 (배열)
+monitor.AddWords("ProductData", "D", 200, 10);  // D200~D209: 제품 데이터 10개
+
+// 상세 설정이 필요한 경우
+monitor.AddItem(new MonitorItem
+{
+    Name = "CycleTime",
+    Device = "D",
+    Address = 300,
+    DataType = MonitorDataType.DWord,  // 32비트 정수
+    Count = 1
+});
+
+// ============================================
+// 3. 이벤트 등록
+// ============================================
+
+// 값이 변경될 때마다 호출
 monitor.DataChanged += (s, e) =>
 {
-    Console.WriteLine($"[{e.Item.Name}] {e.OldValue} → {e.NewValue}");
+    Console.WriteLine($"[변경] {e.Item.Name}: {e.OldValue} → {e.NewValue}");
+    Console.WriteLine($"       시간: {e.Timestamp}");
+    
+    // 특정 조건에 따른 처리
+    if (e.Item.Name == "Running" && (bool)e.NewValue == false)
+    {
+        Console.WriteLine(">>> 설비 정지 감지!");
+    }
 };
 
-// 에러 이벤트
+// 폴링 완료 시 호출 (모든 항목 읽기 완료)
+monitor.PollingCompleted += (s, e) =>
+{
+    // UI 갱신 등
+    UpdateUI();
+};
+
+// 에러 발생 시 호출
 monitor.ErrorOccurred += (s, e) =>
 {
-    Console.WriteLine($"에러 [{e.Item?.Name}]: {e.Message}");
+    Console.WriteLine($"[에러] {e.Item?.Name}: {e.Message}");
 };
 
-// 모니터링 시작
-monitor.Start();
+// ============================================
+// 4. 모니터링 시작/중지
+// ============================================
+
+monitor.Start();  // 백그라운드 스레드에서 폴링 시작
+
+// ... 프로그램 실행 중 ...
 
 // 현재 값 조회
 var tempItem = monitor.GetItem("Temperature");
-Console.WriteLine($"현재 온도: {tempItem?.CurrentValue}");
+if (tempItem != null)
+{
+    Console.WriteLine($"현재 온도: {tempItem.CurrentValue}");
+    Console.WriteLine($"이전 온도: {tempItem.PreviousValue}");
+    Console.WriteLine($"마지막 업데이트: {tempItem.LastUpdated}");
+}
 
-// 수동 폴링 (한 번만)
+// 모든 항목 조회
+var allItems = monitor.GetAllItems();
+foreach (var item in allItems)
+{
+    Console.WriteLine($"{item.Name} = {item.CurrentValue}");
+}
+
+// 수동으로 한 번만 폴링 (Start 안 해도 됨)
 monitor.PollOnce();
 
 // 모니터링 중지
@@ -478,7 +576,57 @@ monitor.Stop();
 monitor.Dispose();
 ```
 
-#### Recipe Manager (레시피 관리)
+#### 데이터 타입
+
+| 타입 | 설명 | PLC 예시 |
+|------|------|----------|
+| `Bit` | 1비트 (true/false) | M100, X0, Y0 |
+| `Word` | 16비트 정수 | D100 (1워드) |
+| `DWord` | 32비트 정수 | D100-D101 (2워드) |
+| `Real` | 32비트 실수 | D100-D101 (2워드, Float) |
+| `Words` | 16비트 정수 배열 | D100~D109 (연속) |
+
+---
+
+### RecipeManager (레시피 관리)
+
+#### 개념
+
+**레시피**란 제품 생산에 필요한 **설정값 모음**입니다. 제품마다 다른 설정(온도, 압력, 시간 등)을 파일로 저장하고, 필요할 때 PLC에 한 번에 전송합니다.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    RecipeManager 개념                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   [XML 파일]              [RecipeManager]           [PLC]   │
+│                                                             │
+│   Recipe_A.xml  ─────┐                                     │
+│   - 온도: 80°C       │      ┌──────────┐      ┌───────┐   │
+│   - 압력: 5bar       ├────► │          │      │ D1000 │   │
+│   - 시간: 30초       │      │  Upload  │ ───► │ D1001 │   │
+│                      │      │          │      │ D1002 │   │
+│   Recipe_B.xml  ─────┘      │          │      │  ...  │   │
+│   - 온도: 120°C             │          │      └───────┘   │
+│   - 압력: 8bar              │          │                   │
+│   - 시간: 45초              │ Download │ ◄─── PLC에서     │
+│                             │          │      현재값 읽기  │
+│                             └──────────┘                   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 사용 상황
+
+| 상황 | 설명 |
+|------|------|
+| 제품 변경 | A제품 → B제품 전환 시 레시피 교체 |
+| 설정 백업 | 현재 PLC 설정을 파일로 저장 |
+| 설정 복원 | 저장된 파일을 PLC에 전송 |
+| 설정 비교 | 파일과 PLC 값이 같은지 확인 |
+
+#### 예제 코드
+
 ```csharp
 using CCM.Communication.PLC;
 using CCM.Communication.PLC.Utilities;
@@ -486,46 +634,202 @@ using CCM.Communication.PLC.Utilities;
 var plc = new MitsubishiMcProtocol("192.168.0.10", 5001);
 plc.Connect();
 
+// ============================================
+// 1. RecipeManager 생성 및 설정
+// ============================================
 var recipe = new RecipeManager(plc)
 {
-    RecipeDevice = "D",
-    RecipeStartAddress = 1000,
-    RecipeWordCount = 50
+    RecipeDevice = "D",           // 레시피 저장 디바이스
+    RecipeStartAddress = 1000,    // 시작 주소: D1000
+    RecipeWordCount = 50          // 전체 크기: D1000~D1049 (50워드)
 };
 
-// 레시피 항목 정의
+// ============================================
+// 2. 레시피 항목 정의 (PLC 주소 매핑)
+// ============================================
+// AddItem(이름, 오프셋, 데이터타입, 설명)
+// 오프셋: RecipeStartAddress로부터의 상대 위치
+
 recipe.AddItem("SetTemp", 0, RecipeDataType.Real, "설정 온도");
+// → D1000~D1001 (Real = 2워드)
+
 recipe.AddItem("SetPressure", 2, RecipeDataType.Real, "설정 압력");
-recipe.AddItem("CycleTime", 4, RecipeDataType.DWord, "사이클 타임");
+// → D1002~D1003
+
+recipe.AddItem("CycleTime", 4, RecipeDataType.DWord, "사이클 타임(ms)");
+// → D1004~D1005
+
 recipe.AddItem("Mode", 6, RecipeDataType.Word, "운전 모드");
+// → D1006
 
-// PLC에서 레시피 읽기
-var data = recipe.Download();
-Console.WriteLine($"설정 온도: {data["SetTemp"]}");
-Console.WriteLine($"사이클 타임: {data["CycleTime"]}");
+recipe.AddItem("AlarmLimit", 7, RecipeDataType.Word, "알람 한계값");
+// → D1007
 
-// 레시피 값 변경 및 PLC에 쓰기
-data["SetTemp"] = 85.5f;
-data["CycleTime"] = 120;
-recipe.Upload(data);
+// ============================================
+// 3. PLC에서 레시피 읽기 (Download)
+// ============================================
+var currentData = recipe.Download();
 
-// XML 파일로 저장
-recipe.SaveToXml(data, "Recipe_001.xml", "Recipe001", "생산용 레시피");
+Console.WriteLine($"현재 설정 온도: {currentData["SetTemp"]}°C");
+Console.WriteLine($"현재 설정 압력: {currentData["SetPressure"]}bar");
+Console.WriteLine($"현재 사이클 타임: {currentData["CycleTime"]}ms");
+Console.WriteLine($"현재 운전 모드: {currentData["Mode"]}");
 
-// XML 파일에서 로드
-var loadedData = recipe.LoadFromXml("Recipe_001.xml");
+// ============================================
+// 4. 레시피 수정 및 PLC에 쓰기 (Upload)
+// ============================================
+currentData["SetTemp"] = 85.5f;      // 온도 변경
+currentData["CycleTime"] = 120000;   // 2분으로 변경
+
+recipe.Upload(currentData);
+Console.WriteLine("레시피 업로드 완료!");
+
+// ============================================
+// 5. XML 파일로 저장/로드
+// ============================================
+
+// 현재 설정을 파일로 저장
+recipe.SaveToXml(currentData, "Recipe_ProductA.xml", "ProductA", "A제품 생산용 레시피");
+
+// 저장된 XML 내용 예시:
+// <?xml version="1.0" encoding="utf-8"?>
+// <Recipe>
+//   <Name>ProductA</Name>
+//   <Description>A제품 생산용 레시피</Description>
+//   <CreatedTime>2024-01-15T10:30:00</CreatedTime>
+//   <Items>
+//     <Item Name="SetTemp" Type="Real" Description="설정 온도">85.5</Item>
+//     <Item Name="SetPressure" Type="Real" Description="설정 압력">5.0</Item>
+//     <Item Name="CycleTime" Type="DWord" Description="사이클 타임(ms)">120000</Item>
+//     <Item Name="Mode" Type="Word" Description="운전 모드">1</Item>
+//   </Items>
+// </Recipe>
+
+// 파일에서 로드
+var loadedData = recipe.LoadFromXml("Recipe_ProductA.xml");
+
+// PLC에 적용
 recipe.Upload(loadedData);
 
-// 레시피 비교
-var currentData = recipe.Download();
-var differences = recipe.Compare(loadedData, currentData);
-foreach (var diff in differences)
+// ============================================
+// 6. 레시피 비교 (파일 vs PLC)
+// ============================================
+var fileData = recipe.LoadFromXml("Recipe_ProductA.xml");
+var plcData = recipe.Download();
+
+var differences = recipe.Compare(fileData, plcData);
+
+if (differences.Count == 0)
 {
-    Console.WriteLine($"[{diff.ItemName}] 파일: {diff.Value1} ↔ PLC: {diff.Value2}");
+    Console.WriteLine("파일과 PLC 설정이 일치합니다.");
+}
+else
+{
+    Console.WriteLine("차이점 발견:");
+    foreach (var diff in differences)
+    {
+        Console.WriteLine($"  [{diff.ItemName}] 파일: {diff.Value1} ↔ PLC: {diff.Value2}");
+    }
 }
 ```
 
-#### Handshake Helper (PC↔PLC 핸드쉐이크)
+#### 실전 예시: 제품 변경
+
+```csharp
+// 작업자가 "B제품"을 선택했을 때
+void ChangeProduct(string productName)
+{
+    string recipeFile = $"Recipe_{productName}.xml";
+    
+    if (!File.Exists(recipeFile))
+    {
+        MessageBox.Show("레시피 파일이 없습니다!");
+        return;
+    }
+    
+    // 1. 레시피 로드
+    var newRecipe = recipe.LoadFromXml(recipeFile);
+    
+    // 2. PLC에 전송
+    recipe.Upload(newRecipe);
+    
+    // 3. 확인 (비교)
+    var plcData = recipe.Download();
+    var diff = recipe.Compare(newRecipe, plcData);
+    
+    if (diff.Count == 0)
+        MessageBox.Show($"{productName} 레시피 적용 완료!");
+    else
+        MessageBox.Show("레시피 적용 실패! 값이 일치하지 않습니다.");
+}
+```
+
+---
+
+### HandshakeHelper (PC↔PLC 핸드쉐이크)
+
+#### 개념
+
+PC와 PLC 간의 **명령-응답 동기화 메커니즘**입니다. PC가 "이 작업 해줘"라고 요청하고, PLC가 "다 했어"라고 응답하는 패턴입니다.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   핸드쉐이크 기본 흐름                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   PC (C#)                                    PLC (래더)     │
+│                                                             │
+│   ┌─────────────────┐                                      │
+│   │ 1. M100 = On    │ ─────────────────────►  트리거 감지  │
+│   │    "요청했어"    │                          작업 수행   │
+│   └─────────────────┘                                      │
+│                                                             │
+│                       ◄─────────────────────  ┌──────────┐ │
+│   완료 비트 감지                              │ 2. M200  │ │
+│                                               │    = On  │ │
+│                                               │ "끝났어" │ │
+│   ┌─────────────────┐                        └──────────┘ │
+│   │ 3. M100 = Off   │ ─────────────────────►              │
+│   │    "확인했어"    │                                     │
+│   └─────────────────┘                                      │
+│                                                             │
+│                       ◄─────────────────────  ┌──────────┐ │
+│   원상복구 완료                               │ 4. M200  │ │
+│   [핸드쉐이크 종료]                           │    = Off │ │
+│                                               │ "리셋"   │ │
+│                                               └──────────┘ │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 왜 필요한가?
+
+**잘못된 방식 (타이밍 문제 발생):**
+```csharp
+plc.WriteBit("M", 100, true);   // 시작 명령
+Thread.Sleep(1000);              // 그냥 1초 기다림... 충분한가? 부족한가?
+var result = plc.ReadWord("D", 200);  // 결과 읽기 - 아직 준비 안됐을 수도!
+```
+
+**올바른 방식 (HandshakeHelper 사용):**
+```csharp
+var result = handshake.Execute("M", 100, "M", 200, timeout: 5000);
+// PLC가 "완료"라고 할 때까지 확실하게 대기
+if (result.IsSuccess)
+    var data = plc.ReadWord("D", 200);  // 이제 안전하게 읽기
+```
+
+#### 사용 상황
+
+| 상황 | 설명 |
+|------|------|
+| 레시피 적용 | PC가 레시피 전송 → PLC가 적용 완료 신호 |
+| 생산 시작/정지 | PC가 명령 → PLC가 준비 완료 신호 |
+| 데이터 요청 | PC가 조회 요청 → PLC가 데이터 준비 완료 신호 |
+| 수동 조작 | PC에서 버튼 클릭 → PLC가 동작 완료 신호 |
+
+#### 예제 코드
+
 ```csharp
 using CCM.Communication.PLC;
 using CCM.Communication.PLC.Utilities;
@@ -533,75 +837,268 @@ using CCM.Communication.PLC.Utilities;
 var plc = new MitsubishiMcProtocol("192.168.0.10", 5001);
 plc.Connect();
 
+// ============================================
+// 1. HandshakeHelper 생성 및 설정
+// ============================================
 var handshake = new HandshakeHelper(plc)
 {
-    PollingInterval = 50,      // 완료 비트 체크 간격
-    StabilizeDelay = 100,      // 핸드쉐이크 후 안정화 대기
-    WaitForCompleteOff = true  // 완료 비트 Off 대기
+    PollingInterval = 50,       // 완료 비트 체크 주기 (50ms마다 확인)
+    StabilizeDelay = 100,       // 핸드쉐이크 완료 후 안정화 대기
+    WaitForCompleteOff = true,  // PLC가 완료 비트 Off 할 때까지 대기
+    CompleteOffTimeout = 5000   // 완료 비트 Off 대기 타임아웃
 };
 
-// 간단한 핸드쉐이크 (트리거/완료 비트만)
+// ============================================
+// 2. 기본 핸드쉐이크 (신호만)
+// ============================================
 // PC: M100 On → PLC 처리 → PLC: M200 On → PC: M100 Off → PLC: M200 Off
+
 var result = handshake.Execute(
-    triggerDevice: "M", triggerAddress: 100,
-    completeDevice: "M", completeAddress: 200,
-    timeout: 5000);
+    triggerDevice: "M", triggerAddress: 100,   // PC → PLC 트리거
+    completeDevice: "M", completeAddress: 200, // PLC → PC 완료
+    timeout: 5000);                             // 5초 타임아웃
 
 if (result.IsSuccess)
-    Console.WriteLine($"핸드쉐이크 완료: {result.ElapsedMilliseconds}ms");
+    Console.WriteLine($"성공! 소요시간: {result.ElapsedMilliseconds}ms");
 else if (result.IsTimeout)
-    Console.WriteLine("타임아웃 발생");
+    Console.WriteLine("타임아웃: PLC가 5초 안에 응답하지 않음");
 else
     Console.WriteLine($"에러: {result.ErrorMessage}");
 
-// 데이터 포함 핸드쉐이크
-var requestData = new short[] { 100, 200, 300 };
+// ============================================
+// 3. 데이터 포함 핸드쉐이크
+// ============================================
+// PC가 데이터를 보내고, PLC가 처리 후 결과를 돌려주는 패턴
+
+// 요청 데이터 준비 (예: 바코드 번호)
+var requestData = new short[] { 12345 };
+
 var dataResult = handshake.ExecuteWithData(
     triggerDevice: "M", triggerAddress: 100,
     completeDevice: "M", completeAddress: 200,
-    dataDevice: "D", dataAddress: 500, dataLength: 10,
-    requestData: requestData,
+    dataDevice: "D", dataAddress: 500,  // 데이터 영역: D500~
+    dataLength: 10,                      // 응답으로 읽을 워드 수
+    requestData: requestData,            // 요청 데이터 (D500에 씀)
     timeout: 10000);
+
+// 내부 동작:
+// [1] D500에 12345 씀 (요청 데이터)
+// [2] M100 = On (트리거)
+// [3] M200 = On 대기 (PLC 처리 완료)
+// [4] D500~D509 읽기 (응답 데이터)
+// [5] M100 = Off
+// [6] M200 = Off 대기
 
 if (dataResult.IsSuccess && dataResult.ResponseData != null)
 {
-    Console.WriteLine($"응답 데이터: {string.Join(", ", dataResult.ResponseData)}");
+    // PLC가 D500~D509에 써준 응답 데이터
+    Console.WriteLine($"제품코드: {dataResult.ResponseData[0]}");
+    Console.WriteLine($"수량: {dataResult.ResponseData[1]}");
+    Console.WriteLine($"상태: {dataResult.ResponseData[2]}");
 }
 
-// 명령 객체 사용
+// ============================================
+// 4. 명령 객체 사용 (재사용 가능)
+// ============================================
 var command = new HandshakeCommand
 {
-    CommandId = 1,
-    Name = "StartProduction",
+    CommandId = 1,                    // 명령 ID (로깅, 식별용)
+    Name = "StartProduction",         // 명령 이름
     TriggerDevice = "M",
     TriggerAddress = 100,
     CompleteDevice = "M",
     CompleteAddress = 200,
     DataDevice = "D",
     DataAddress = 500,
-    DataLength = 20,
+    DataLength = 20,                  // D500~D519
     Timeout = 10000
 };
 
+// 상태 변경 이벤트 (로깅, UI 업데이트용)
 handshake.StateChanged += (s, e) =>
 {
     Console.WriteLine($"[{e.Command.Name}] 상태: {e.State}");
+    // 출력 예:
+    // [StartProduction] 상태: WaitingComplete
+    // [StartProduction] 상태: Completed
 };
 
-var cmdResult = handshake.Execute(command, requestData);
+var prodData = new short[] { 1, 100 };  // 라인번호, 목표수량
+var cmdResult = handshake.Execute(command, prodData);
 
-// 유틸리티 메서드
-// 비트 상태 대기
-bool reached = handshake.WaitForBit("M", 300, true, 5000);
+// ============================================
+// 5. 유틸리티 메서드
+// ============================================
 
-// 펄스 전송 (On → Off)
+// 비트 상태 대기: M300이 On될 때까지 최대 5초 대기
+bool bitReached = handshake.WaitForBit("M", 300, true, 5000);
+if (bitReached)
+    Console.WriteLine("M300이 On됨!");
+else
+    Console.WriteLine("타임아웃: M300이 여전히 Off");
+
+// 펄스 전송: M100을 200ms동안 On 후 Off (원샷 트리거)
 handshake.SendPulse("M", 100, pulseWidth: 200);
+// 동작: M100=On → 200ms 대기 → M100=Off
 
-// 워드 값 대기
-bool valueReached = handshake.WaitForWord("D", 100, targetValue: 1, timeout: 5000);
+// 워드 값 대기: D100이 1이 될 때까지 최대 5초 대기
+bool wordReached = handshake.WaitForWord("D", 100, targetValue: 1, timeout: 5000);
+// 사용 예: 스텝 번호가 특정 값이 될 때까지 대기
+
+// 워드 범위 대기: D100이 10~20 사이가 될 때까지 대기
+bool rangeReached = handshake.WaitForWordInRange("D", 100, 10, 20, timeout: 5000);
 ```
 
-#### Alarm Manager (알람 관리)
+#### PLC 래더 프로그램 예시 (Mitsubishi GX Works)
+
+PC와 핸드쉐이크하려면 PLC에도 대응하는 프로그램이 필요합니다:
+
+```
+[M100 트리거 감지 → 작업 시작]
+──┤ M100 ├──┤/M200 ├──────────────────────────( M1000 )──
+                                               작업 중 플래그
+
+[작업 수행 - 예: D500 바코드로 제품 정보 조회]
+──┤ M1000 ├───────────────────────────────────[ MOV K42 D500 ]──
+                                               제품코드 → D500
+
+──┤ M1000 ├───────────────────────────────────[ MOV K100 D501 ]──
+                                               수량 → D501
+
+──┤ M1000 ├───────────────────────────────────[ MOV K1 D502 ]──
+                                               상태 → D502
+
+[작업 완료 → 완료 비트 On]
+──┤ M1000 ├───────────────────────────────────( M200 )──
+                                               완료 신호
+
+──┤ M1000 ├───────────────────────────────────( RST M1000 )──
+                                               작업 중 플래그 Off
+
+[PC가 트리거 Off → 완료 비트 Off (원상복구)]
+──┤/M100 ├──┤ M200 ├──────────────────────────( RST M200 )──
+```
+
+#### 실전 예시: 생산 시작 전체 흐름
+
+```csharp
+void StartProduction(int lineNo, int targetQty)
+{
+    // 1. 안전 조건 확인 (비상정지 해제 확인)
+    if (!handshake.WaitForBit("M", 500, true, 10000))
+    {
+        MessageBox.Show("비상정지가 해제되지 않았습니다!");
+        return;
+    }
+    
+    // 2. 생산 명령 전송
+    var command = new HandshakeCommand
+    {
+        Name = "StartProduction",
+        TriggerDevice = "M", TriggerAddress = 100,
+        CompleteDevice = "M", CompleteAddress = 200,
+        DataDevice = "D", DataAddress = 500, DataLength = 10,
+        Timeout = 5000
+    };
+    
+    var data = new short[] { (short)lineNo, (short)targetQty };
+    var result = handshake.Execute(command, data);
+    
+    if (!result.IsSuccess)
+    {
+        MessageBox.Show($"생산 시작 실패: {result.ErrorMessage}");
+        return;
+    }
+    
+    // 3. 생산 완료 대기 (D100 스텝이 99가 되면 완료)
+    lblStatus.Text = "생산 중...";
+    
+    if (handshake.WaitForWord("D", 100, 99, timeout: 3600000))  // 최대 1시간
+    {
+        // 4. 완료 확인 펄스
+        handshake.SendPulse("M", 110, 100);
+        MessageBox.Show("생산 완료!");
+    }
+    else
+    {
+        MessageBox.Show("생산 타임아웃!");
+    }
+}
+```
+
+#### 주요 속성/메서드 요약
+
+| 속성/메서드 | 설명 |
+|------------|------|
+| `PollingInterval` | 완료 비트 체크 주기 (ms) |
+| `StabilizeDelay` | 핸드쉐이크 후 안정화 대기 (ms) |
+| `WaitForCompleteOff` | 완료 비트 Off까지 대기 여부 |
+| `Execute()` | 기본 핸드쉐이크 실행 |
+| `ExecuteWithData()` | 데이터 포함 핸드쉐이크 |
+| `WaitForBit()` | 비트 상태 대기 |
+| `WaitForWord()` | 워드 값 대기 |
+| `SendPulse()` | 펄스(원샷) 전송 |
+| `StateChanged` | 상태 변경 이벤트 |
+
+---
+
+### AlarmManager (알람 관리)
+
+#### 개념
+
+PLC의 **알람 비트들을 모니터링**하고, 알람 **발생/해제 이력을 관리**하는 클래스입니다.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    알람 비트 구조                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   D1000 (알람 워드 0)                                       │
+│   ┌─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┐                       │
+│   │0│0│0│0│0│0│0│0│0│0│0│1│0│1│1│0│                       │
+│   └─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┘                       │
+│    15                      4 3 2 1 0  ← 비트 위치           │
+│                            │ │ │ │                          │
+│                            │ │ │ └── 알람1001: 온도상한    │
+│                            │ │ └──── 알람1002: 온도하한    │
+│                            │ └────── 알람1003: 압력이상    │
+│                            └──────── 알람1004: 유량이상    │
+│                                                             │
+│   D1001 (알람 워드 1)                                       │
+│   ┌─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┐                       │
+│   │0│0│0│0│0│0│0│1│0│0│0│0│1│1│0│0│                       │
+│   └─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┘                       │
+│                  8         4 3 2 1 0                        │
+│                  │         │ │                              │
+│                  │         │ └── 알람2002: 모터1 과부하     │
+│                  │         └──── 알람2003: 모터2 과부하     │
+│                  └────────────── 알람2008: 비상정지         │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 알람 상태 흐름
+
+```
+   [Normal]                    [Active]                 [Acknowledged]              [Cleared]
+      │                           │                           │                         │
+      │   비트 On                 │   운전자 확인             │   비트 Off              │
+      ├─────────────────────────► ├─────────────────────────► ├───────────────────────► │
+      │   AlarmOccurred 이벤트    │                           │   AlarmCleared 이벤트   │
+      │                           │                           │                         │
+```
+
+#### 사용 상황
+
+| 상황 | 설명 |
+|------|------|
+| 알람 모니터링 화면 | 현재 발생 중인 알람 목록 표시 |
+| 알람 이력 조회 | 과거 알람 발생/해제 기록 |
+| 알람 확인(Ack) | 운전자가 알람을 인지했음을 표시 |
+| 알람 통계 | 알람 발생 빈도, 등급별 분류 |
+
+#### 예제 코드
+
 ```csharp
 using CCM.Communication.PLC;
 using CCM.Communication.PLC.Utilities;
@@ -609,82 +1106,305 @@ using CCM.Communication.PLC.Utilities;
 var plc = new MitsubishiMcProtocol("192.168.0.10", 5001);
 plc.Connect();
 
-// 알람 영역: D1000 ~ D1009 (10워드 = 160비트)
+// ============================================
+// 1. AlarmManager 생성 및 설정
+// ============================================
 var alarm = new AlarmManager(plc, "D", 1000, 10)
+// 알람 영역: D1000 ~ D1009 (10워드 = 160비트 = 최대 160개 알람)
 {
-    PollingInterval = 500,
-    MaxHistoryCount = 1000
+    PollingInterval = 500,      // 500ms마다 알람 체크
+    MaxHistoryCount = 1000,     // 최대 1000개 이력 보관
+    ContinueOnError = true      // 에러 발생해도 계속 모니터링
 };
 
-// 알람 정의 (개별 추가)
-alarm.AddAlarm(1001, "온도 상한 초과", wordIndex: 0, bitPosition: 0, AlarmSeverity.Error, "온도가 설정값을 초과했습니다", "온도");
-alarm.AddAlarm(1002, "온도 하한 미달", wordIndex: 0, bitPosition: 1, AlarmSeverity.Warning, "온도가 설정값 미만입니다", "온도");
-alarm.AddAlarm(1003, "압력 이상", wordIndex: 0, bitPosition: 2, AlarmSeverity.Critical, "압력 센서 이상", "압력");
+// ============================================
+// 2. 알람 정의 (비트 ↔ 알람 매핑)
+// ============================================
 
-// 알람 정의 (워드 단위 일괄 추가)
+// 개별 알람 추가
+// AddAlarm(코드, 이름, 워드인덱스, 비트위치, 등급, 설명, 그룹)
+alarm.AddAlarm(
+    code: 1001,
+    name: "온도 상한 초과",
+    wordIndex: 0,           // D1000
+    bitPosition: 0,         // 비트 0
+    severity: AlarmSeverity.Error,
+    description: "온도가 설정값을 초과했습니다",
+    group: "온도"
+);
+// → D1000.0 = On 이면 알람 1001 발생
+
+alarm.AddAlarm(1002, "온도 하한 미달", 0, 1, AlarmSeverity.Warning, "온도가 설정값 미만입니다", "온도");
+// → D1000.1
+
+alarm.AddAlarm(1003, "압력 이상", 0, 2, AlarmSeverity.Critical, "압력 센서 이상! 즉시 조치 필요", "압력");
+// → D1000.2
+
+// 워드 단위 일괄 추가 (16비트 한 번에 정의)
 alarm.AddAlarmsForWord(
-    wordIndex: 1,
-    baseCode: 2000,
-    alarmNames: new[] { "모터1 과부하", "모터2 과부하", "인버터 이상", "서보 이상", null, null, "비상정지", "안전문 열림" },
+    wordIndex: 1,               // D1001
+    baseCode: 2000,             // 알람 코드 시작 번호
+    alarmNames: new[] {
+        "모터1 과부하",          // 비트0 → 알람 2000
+        "모터2 과부하",          // 비트1 → 알람 2001
+        "인버터 이상",           // 비트2 → 알람 2002
+        "서보 이상",             // 비트3 → 알람 2003
+        null,                   // 비트4 → 사용 안함
+        null,                   // 비트5 → 사용 안함
+        "비상정지",              // 비트6 → 알람 2006
+        "안전문 열림"            // 비트7 → 알람 2007
+    },
     severity: AlarmSeverity.Error,
     group: "구동부"
 );
 
-// 이벤트 등록
+// ============================================
+// 3. 이벤트 등록
+// ============================================
+
+// 알람 발생 시
 alarm.AlarmOccurred += (s, e) =>
 {
-    Console.WriteLine($"[알람 발생] {e.Alarm.Definition.Code}: {e.Alarm.Definition.Name}");
-    Console.WriteLine($"  등급: {e.Alarm.Definition.Severity}, 그룹: {e.Alarm.Definition.Group}");
+    Console.WriteLine($"[알람 발생!] {e.Alarm.Definition.Code}: {e.Alarm.Definition.Name}");
+    Console.WriteLine($"  등급: {e.Alarm.Definition.Severity}");
+    Console.WriteLine($"  그룹: {e.Alarm.Definition.Group}");
+    Console.WriteLine($"  설명: {e.Alarm.Definition.Description}");
+    Console.WriteLine($"  발생시간: {e.Alarm.OccurredTime}");
+    
+    // Critical 알람이면 경고음
+    if (e.Alarm.Definition.Severity == AlarmSeverity.Critical)
+    {
+        Console.Beep(1000, 500);  // 경고음
+    }
 };
 
+// 알람 해제 시
 alarm.AlarmCleared += (s, e) =>
 {
     Console.WriteLine($"[알람 해제] {e.Alarm.Definition.Code}: {e.Alarm.Definition.Name}");
     Console.WriteLine($"  지속시간: {e.Alarm.Duration?.TotalSeconds:F1}초");
 };
 
-// 모니터링 시작
+// 에러 발생 시
+alarm.ErrorOccurred += (s, e) =>
+{
+    Console.WriteLine($"[모니터링 에러] {e.Message}");
+};
+
+// ============================================
+// 4. 모니터링 시작
+// ============================================
 alarm.Start();
 
-// 활성 알람 조회
+// ============================================
+// 5. 알람 조회
+// ============================================
+
+// 현재 활성 알람 전체
 var activeAlarms = alarm.GetActiveAlarms();
+Console.WriteLine($"현재 발생 중인 알람: {activeAlarms.Count}개");
 foreach (var a in activeAlarms)
 {
-    Console.WriteLine($"[{a.Definition.Code}] {a.Definition.Name} - {a.OccurredTime}");
+    Console.WriteLine($"  [{a.Definition.Code}] {a.Definition.Name}");
+    Console.WriteLine($"    발생: {a.OccurredTime}, 상태: {a.State}");
 }
 
-// Critical 알람만 조회
+// 특정 등급 이상만 조회
 var criticalAlarms = alarm.GetActiveAlarms(AlarmSeverity.Critical);
+var errorOrAbove = alarm.GetActiveAlarms(AlarmSeverity.Error);
 
-// 특정 알람 활성 여부 확인
+// 특정 알람 확인
 if (alarm.IsAlarmActive(1003))
     Console.WriteLine("압력 이상 알람 발생 중!");
 
-// Critical 알람 존재 여부
+// Critical 알람 존재 여부 (긴급 상황 체크)
 if (alarm.HasCriticalAlarm())
-    Console.WriteLine("치명적 알람이 있습니다!");
+{
+    Console.WriteLine("!!! 치명적 알람 발생 - 즉시 조치 필요 !!!");
+}
 
-// 알람 확인 (Acknowledge)
-alarm.AcknowledgeAlarm(1001, "운전자A");
+// ============================================
+// 6. 알람 확인 (Acknowledge)
+// ============================================
+// 운전자가 알람을 인지했음을 표시 (알람 자체를 끄는 게 아님)
 
-// 모든 알람 확인
+// 개별 알람 확인
+bool acked = alarm.AcknowledgeAlarm(1001, "운전자A");
+if (acked)
+    Console.WriteLine("알람 1001 확인 완료");
+
+// 모든 알람 일괄 확인
 int ackCount = alarm.AcknowledgeAll("관리자");
+Console.WriteLine($"{ackCount}개 알람 확인 완료");
 
-// 알람 통계
+// ============================================
+// 7. 알람 통계
+// ============================================
 var stats = alarm.GetStatistics();
-Console.WriteLine($"활성: {stats.ActiveAlarmCount}, 미확인: {stats.UnacknowledgedCount}");
-Console.WriteLine($"Critical: {stats.CriticalCount}, Error: {stats.ErrorCount}, Warning: {stats.WarningCount}");
+Console.WriteLine($"=== 알람 통계 ===");
+Console.WriteLine($"활성 알람: {stats.ActiveAlarmCount}개");
+Console.WriteLine($"미확인: {stats.UnacknowledgedCount}개");
+Console.WriteLine($"Critical: {stats.CriticalCount}개");
+Console.WriteLine($"Error: {stats.ErrorCount}개");
+Console.WriteLine($"Warning: {stats.WarningCount}개");
+Console.WriteLine($"Info: {stats.InfoCount}개");
+Console.WriteLine($"총 이력: {stats.TotalHistoryCount}개");
 
-// 알람 이력 조회
-var history = alarm.GetAlarmHistory(100);  // 최근 100개
+// ============================================
+// 8. 알람 이력 조회
+// ============================================
+
+// 최근 100개 이력
+var history = alarm.GetAlarmHistory(100);
+foreach (var h in history)
+{
+    Console.WriteLine($"[{h.Definition.Code}] {h.Definition.Name}");
+    Console.WriteLine($"  발생: {h.OccurredTime}");
+    Console.WriteLine($"  해제: {h.ClearedTime}");
+    Console.WriteLine($"  확인: {h.AcknowledgedTime} by {h.AcknowledgedBy}");
+}
+
+// 기간별 이력 조회
 var todayHistory = alarm.GetAlarmHistory(DateTime.Today, DateTime.Now);
+var lastWeek = alarm.GetAlarmHistory(DateTime.Now.AddDays(-7), DateTime.Now);
 
-// 모니터링 중지
+// ============================================
+// 9. 종료
+// ============================================
 alarm.Stop();
 alarm.Dispose();
 ```
 
-#### Production Logger (생산 데이터 로깅)
+#### 알람 등급
+
+| 등급 | 값 | 설명 | 예시 |
+|------|----|----|------|
+| `Info` | 0 | 정보 | 작업 시작, 완료 알림 |
+| `Warning` | 1 | 경고 | 온도 근접, 소모품 교체 예정 |
+| `Error` | 2 | 에러 | 센서 이상, 모터 과부하 |
+| `Critical` | 3 | 치명적 | 비상정지, 화재 감지 |
+
+#### 실전 예시: 알람 화면 UI
+
+```csharp
+// WinForm 알람 화면 예시
+public partial class AlarmForm : Form
+{
+    private AlarmManager _alarm;
+    
+    public AlarmForm(IPlcCommunication plc)
+    {
+        InitializeComponent();
+        
+        _alarm = new AlarmManager(plc, "D", 1000, 20);
+        SetupAlarms();
+        
+        _alarm.AlarmOccurred += Alarm_Occurred;
+        _alarm.AlarmCleared += Alarm_Cleared;
+        
+        _alarm.Start();
+    }
+    
+    private void Alarm_Occurred(object sender, AlarmEventArgs e)
+    {
+        // UI 스레드에서 실행
+        this.Invoke((Action)(() =>
+        {
+            // 알람 목록에 추가
+            var item = new ListViewItem(new[] {
+                e.Alarm.Definition.Code.ToString(),
+                e.Alarm.Definition.Name,
+                e.Alarm.Definition.Severity.ToString(),
+                e.Alarm.OccurredTime.ToString("HH:mm:ss")
+            });
+            
+            // 등급별 색상
+            switch (e.Alarm.Definition.Severity)
+            {
+                case AlarmSeverity.Critical:
+                    item.BackColor = Color.Red;
+                    item.ForeColor = Color.White;
+                    break;
+                case AlarmSeverity.Error:
+                    item.BackColor = Color.Orange;
+                    break;
+                case AlarmSeverity.Warning:
+                    item.BackColor = Color.Yellow;
+                    break;
+            }
+            
+            lvAlarms.Items.Insert(0, item);
+            
+            // Critical 알람 시 팝업
+            if (e.Alarm.Definition.Severity == AlarmSeverity.Critical)
+            {
+                MessageBox.Show(
+                    $"치명적 알람 발생!\n\n{e.Alarm.Definition.Name}\n{e.Alarm.Definition.Description}",
+                    "긴급",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }));
+    }
+    
+    private void btnAckAll_Click(object sender, EventArgs e)
+    {
+        int count = _alarm.AcknowledgeAll(Environment.UserName);
+        lblStatus.Text = $"{count}개 알람 확인됨";
+    }
+}
+
+---
+
+### ProductionLogger (생산 데이터 로깅)
+
+#### 개념
+
+PLC에서 **생산 데이터를 주기적으로 읽어서 DB에 저장**하는 클래스입니다. MES(제조실행시스템)나 데이터 분석을 위한 데이터 수집에 사용합니다.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  ProductionLogger 동작                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   [PLC]                [ProductionLogger]         [DB]      │
+│                                                             │
+│   D100: 850  ────┐                                         │
+│   D101: 523  ────┤     ┌──────────────┐     ┌──────────┐  │
+│   D102: 3.14 ────┼────►│  1초마다     │────►│ INSERT   │  │
+│   M100: On   ────┤     │  PLC 읽기    │     │ INTO     │  │
+│   D200: "A01"────┘     │  → DB 저장   │     │ ProdLog  │  │
+│                        └──────────────┘     └──────────┘  │
+│                                                             │
+│   시간     온도   압력   유량    운전   제품코드           │
+│   ─────────────────────────────────────────────────         │
+│   10:00:01  85.0  52.3  3.14   true   A01                  │
+│   10:00:02  85.1  52.1  3.15   true   A01                  │
+│   10:00:03  85.2  52.4  3.14   true   A01                  │
+│   ...                                                       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 로깅 트리거 모드
+
+| 모드 | 설명 | 사용 상황 |
+|------|------|----------|
+| `Periodic` | 일정 주기마다 로깅 | 연속 데이터 수집 (온도, 압력 트렌드) |
+| `OnTrigger` | 특정 비트 On 시 로깅 | 이벤트 기반 (제품 완료, 작업 시작) |
+| `OnChange` | 값 변경 시 로깅 | 상태 변경 기록 (모드 변경, 설정 변경) |
+
+#### 사용 상황
+
+| 상황 | 설명 |
+|------|------|
+| 트렌드 데이터 수집 | 온도, 압력, 속도 등 시계열 데이터 |
+| 생산 실적 기록 | 생산 수량, 양품/불량, 사이클 타임 |
+| 품질 데이터 수집 | 측정값, 검사 결과 |
+| 이벤트 로깅 | 작업 시작/종료, 상태 변경 |
+
+#### 예제 코드
+
 ```csharp
 using CCM.Communication.PLC;
 using CCM.Communication.PLC.Utilities;
@@ -695,29 +1415,67 @@ plc.Connect();
 
 var db = new MssqlHelper("Server=localhost;Database=Production;User Id=sa;Password=1234;");
 
+// ============================================
+// 1. ProductionLogger 생성 및 설정
+// ============================================
 var logger = new ProductionLogger(plc, db, "ProductionLog")
+// 테이블명: ProductionLog
 {
-    LogInterval = 1000,                              // 1초 주기
-    TriggerMode = LogTriggerMode.Periodic,           // 주기적 로깅
-    TimestampColumn = "LogTime"
+    LogInterval = 1000,                    // 1초마다 로깅
+    TriggerMode = LogTriggerMode.Periodic, // 주기적 로깅
+    TimestampColumn = "LogTime",           // 시간 컬럼명
+    UseDynamicInsert = true,               // 동적 INSERT 쿼리 사용
+    ContinueOnError = true                 // 에러 발생해도 계속 로깅
 };
 
-// 로깅 항목 추가
-logger.AddWord("Temperature", "D", 100, scaleFactor: 0.1);     // D100 * 0.1
-logger.AddWord("Pressure", "D", 101, scaleFactor: 0.01);       // D101 * 0.01
-logger.AddReal("FlowRate", "D", 102);                          // D102-103 (Float)
-logger.AddDWord("ProductCount", "D", 110);                     // D110-111 (32bit)
-logger.AddBit("IsRunning", "M", 100);                          // M100 (Bit)
-logger.AddString("ProductCode", "D", 200, wordCount: 10);      // D200-209 (문자열)
+// ============================================
+// 2. 로깅 항목 추가 (PLC 주소 ↔ DB 컬럼 매핑)
+// ============================================
 
-// 이벤트 등록
+// Word (16비트 정수) - 스케일 적용 가능
+logger.AddWord(
+    name: "Temperature",     // DB 컬럼명
+    device: "D",
+    address: 100,
+    scaleFactor: 0.1,        // D100 값 × 0.1
+    offset: 0                // + 오프셋
+);
+// 예: D100=850 → Temperature=85.0
+
+logger.AddWord("Pressure", "D", 101, scaleFactor: 0.01);
+// 예: D101=5230 → Pressure=52.3
+
+// Real (32비트 실수) - D102~D103 사용
+logger.AddReal("FlowRate", "D", 102, decimalPlaces: 2);
+// 예: D102-D103=3.14159 → FlowRate=3.14
+
+// DWord (32비트 정수) - D110~D111 사용
+logger.AddDWord("ProductCount", "D", 110);
+// 예: D110-D111=123456 → ProductCount=123456
+
+// Bit (불리언)
+logger.AddBit("IsRunning", "M", 100);
+// 예: M100=On → IsRunning=true
+
+// String (문자열) - 워드 수 지정
+logger.AddString("ProductCode", "D", 200, wordCount: 10);
+// 예: D200~D209 → ProductCode="PRODUCT-A01"
+
+// ============================================
+// 3. 이벤트 등록
+// ============================================
+
 logger.LogCompleted += (s, e) =>
 {
     if (e.IsSuccess)
     {
-        Console.WriteLine($"[{e.Timestamp}] 로깅 완료");
+        Console.WriteLine($"[{e.Timestamp:HH:mm:ss}] 로깅 완료");
+        
+        // 로깅된 데이터 확인
         foreach (var kv in e.LoggedData)
+        {
             Console.WriteLine($"  {kv.Key}: {kv.Value}");
+        }
     }
     else
     {
@@ -727,47 +1485,231 @@ logger.LogCompleted += (s, e) =>
 
 logger.ErrorOccurred += (s, e) =>
 {
-    Console.WriteLine($"에러: {e.Message}");
+    Console.WriteLine($"[에러] {e.Message}");
 };
 
-// 로깅 시작
+// ============================================
+// 4. 로깅 시작
+// ============================================
 logger.Start();
 
-// --- 트리거 기반 로깅 ---
-var triggerLogger = new ProductionLogger(plc, db, "EventLog")
-{
-    TriggerMode = LogTriggerMode.OnTrigger,
-    TriggerDevice = "M",
-    TriggerAddress = 500,
-    TriggerOnRisingEdge = true  // M500 Off→On 시 로깅
-};
-
-// --- 값 변경 시 로깅 ---
-var changeLogger = new ProductionLogger(plc, db, "ChangeLog")
-{
-    TriggerMode = LogTriggerMode.OnChange,
-    LogInterval = 100  // 100ms 주기로 변경 감지
-};
-
-// 수동 로깅
-logger.LogOnce();
+// 프로그램 실행 중... 백그라운드에서 1초마다 DB에 INSERT
 
 // 통계 확인
 Console.WriteLine($"총 로깅 횟수: {logger.TotalLogCount}");
 Console.WriteLine($"마지막 로깅: {logger.LastLogTime}");
 
-// 테이블 생성 SQL 출력 (개발용)
-Console.WriteLine(logger.GenerateCreateTableSql());
-
-// 저장 프로시저 생성 SQL 출력
-logger.UseDynamicInsert = false;
-logger.StoredProcedureName = "sp_InsertProductionLog";
-Console.WriteLine(logger.GenerateStoredProcedureSql());
+// 수동 로깅 (한 번만)
+logger.LogOnce();
 
 // 로깅 중지
 logger.Stop();
 logger.Dispose();
 ```
+
+#### 트리거 기반 로깅
+
+```csharp
+// ============================================
+// 제품 완료 시점에만 로깅 (트리거 모드)
+// ============================================
+var completionLogger = new ProductionLogger(plc, db, "ProductionResult")
+{
+    TriggerMode = LogTriggerMode.OnTrigger,
+    TriggerDevice = "M",
+    TriggerAddress = 500,        // M500: 제품 완료 신호
+    TriggerOnRisingEdge = true,  // Off→On 감지 (Rising Edge)
+    LogInterval = 50             // 50ms 주기로 트리거 체크
+};
+
+completionLogger.AddDWord("ProductNo", "D", 100);    // 제품 번호
+completionLogger.AddWord("CycleTime", "D", 102);     // 사이클 타임
+completionLogger.AddWord("Result", "D", 103);        // 결과 (1=양품, 2=불량)
+completionLogger.AddReal("MeasuredValue", "D", 104); // 측정값
+
+completionLogger.Start();
+
+// PLC에서 M500이 Off→On 될 때마다 자동으로 로깅
+// 
+// 시간         제품번호  사이클타임  결과  측정값
+// ──────────────────────────────────────────────
+// 10:05:23     1001     45         1     12.34
+// 10:06:12     1002     49         1     12.31
+// 10:06:58     1003     46         2     15.67  ← 불량
+// ...
+```
+
+#### 값 변경 시 로깅
+
+```csharp
+// ============================================
+// 설정값 변경 이력 로깅 (변경 모드)
+// ============================================
+var changeLogger = new ProductionLogger(plc, db, "SettingChangeLog")
+{
+    TriggerMode = LogTriggerMode.OnChange,
+    LogInterval = 100  // 100ms 주기로 변경 감지
+};
+
+changeLogger.AddWord("OperationMode", "D", 50);   // 운전 모드
+changeLogger.AddReal("SetTemperature", "D", 52); // 설정 온도
+changeLogger.AddReal("SetPressure", "D", 54);    // 설정 압력
+
+changeLogger.Start();
+
+// 값이 변경될 때만 로깅
+// 
+// 시간         운전모드  설정온도  설정압력
+// ──────────────────────────────────────────
+// 09:00:00     1        80.0     5.0      ← 초기값
+// 10:30:15     2        80.0     5.0      ← 모드 변경
+// 11:45:30     2        85.0     5.0      ← 온도 변경
+// 14:20:00     2        85.0     6.5      ← 압력 변경
+```
+
+#### DB 테이블 자동 생성
+
+```csharp
+// ============================================
+// 개발용: 테이블/프로시저 생성 SQL 출력
+// ============================================
+
+// 로깅 항목 정의 후...
+logger.AddWord("Temperature", "D", 100);
+logger.AddWord("Pressure", "D", 101);
+logger.AddReal("FlowRate", "D", 102);
+logger.AddBit("IsRunning", "M", 100);
+
+// 테이블 생성 SQL
+Console.WriteLine(logger.GenerateCreateTableSql());
+// 출력:
+// CREATE TABLE ProductionLog (
+//     Id INT IDENTITY(1,1) PRIMARY KEY,
+//     LogTime DATETIME NOT NULL,
+//     Temperature INT NULL,
+//     Pressure INT NULL,
+//     FlowRate FLOAT NULL,
+//     IsRunning BIT NULL
+// )
+
+// 저장 프로시저 생성 SQL
+logger.UseDynamicInsert = false;
+logger.StoredProcedureName = "sp_InsertProductionLog";
+Console.WriteLine(logger.GenerateStoredProcedureSql());
+// 출력:
+// CREATE PROCEDURE sp_InsertProductionLog
+//     @LogTime DATETIME,
+//     @Temperature INT = NULL,
+//     @Pressure INT = NULL,
+//     @FlowRate FLOAT = NULL,
+//     @IsRunning BIT = NULL
+// AS
+// BEGIN
+//     SET NOCOUNT ON;
+//     INSERT INTO ProductionLog (LogTime, Temperature, Pressure, FlowRate, IsRunning)
+//     VALUES (@LogTime, @Temperature, @Pressure, @FlowRate, @IsRunning)
+// END
+```
+
+#### 스케일 팩터 설명
+
+```csharp
+// PLC는 정수만 다루므로, 소수점은 스케일 변환 필요
+
+// 예: 온도 85.3°C를 PLC에서는 853으로 저장 (×10)
+logger.AddWord("Temperature", "D", 100, scaleFactor: 0.1);
+// D100=853 → Temperature=85.3
+
+// 예: 압력 5.23bar를 PLC에서는 523으로 저장 (×100)
+logger.AddWord("Pressure", "D", 101, scaleFactor: 0.01);
+// D101=523 → Pressure=5.23
+
+// 예: 온도 센서가 -50~150°C 범위, 0~4000 출력
+// 변환식: 온도 = (PLC값 × 0.05) - 50
+logger.AddWord("SensorTemp", "D", 102, scaleFactor: 0.05, offset: -50);
+// D102=2000 → SensorTemp = (2000 × 0.05) - 50 = 50°C
+```
+
+#### 실전 예시: 생산 데이터 수집 시스템
+
+```csharp
+public class ProductionDataCollector : IDisposable
+{
+    private ProductionLogger _trendLogger;     // 1초 주기 트렌드
+    private ProductionLogger _completionLogger; // 제품 완료 시
+    private ProductionLogger _alarmLogger;      // 알람 발생 시
+    
+    public ProductionDataCollector(IPlcCommunication plc, MssqlHelper db)
+    {
+        // 1. 트렌드 데이터 (1초 주기)
+        _trendLogger = new ProductionLogger(plc, db, "TrendData")
+        {
+            TriggerMode = LogTriggerMode.Periodic,
+            LogInterval = 1000
+        };
+        _trendLogger.AddReal("Temperature", "D", 100);
+        _trendLogger.AddReal("Pressure", "D", 102);
+        _trendLogger.AddReal("Speed", "D", 104);
+        
+        // 2. 생산 실적 (제품 완료 시)
+        _completionLogger = new ProductionLogger(plc, db, "ProductionResult")
+        {
+            TriggerMode = LogTriggerMode.OnTrigger,
+            TriggerDevice = "M",
+            TriggerAddress = 500,
+            TriggerOnRisingEdge = true
+        };
+        _completionLogger.AddDWord("ProductNo", "D", 200);
+        _completionLogger.AddWord("CycleTime", "D", 204);
+        _completionLogger.AddWord("Result", "D", 205);
+        _completionLogger.AddString("LotNo", "D", 210, 10);
+        
+        // 3. 알람 이력 (알람 발생 시)
+        _alarmLogger = new ProductionLogger(plc, db, "AlarmLog")
+        {
+            TriggerMode = LogTriggerMode.OnChange,
+            LogInterval = 100
+        };
+        _alarmLogger.AddWord("AlarmWord1", "D", 1000);
+        _alarmLogger.AddWord("AlarmWord2", "D", 1001);
+    }
+    
+    public void Start()
+    {
+        _trendLogger.Start();
+        _completionLogger.Start();
+        _alarmLogger.Start();
+    }
+    
+    public void Stop()
+    {
+        _trendLogger.Stop();
+        _completionLogger.Stop();
+        _alarmLogger.Stop();
+    }
+    
+    public void Dispose()
+    {
+        _trendLogger?.Dispose();
+        _completionLogger?.Dispose();
+        _alarmLogger?.Dispose();
+    }
+}
+```
+
+#### 주요 속성/메서드 요약
+
+| 속성/메서드 | 설명 |
+|------------|------|
+| `TableName` | 저장할 DB 테이블명 |
+| `LogInterval` | 로깅 주기 (ms) |
+| `TriggerMode` | 트리거 모드 (Periodic/OnTrigger/OnChange) |
+| `TriggerDevice/Address` | 트리거 비트 주소 (OnTrigger 모드) |
+| `AddWord/AddReal/AddBit/AddString` | 로깅 항목 추가 |
+| `Start/Stop` | 로깅 시작/중지 |
+| `LogOnce` | 수동 로깅 (1회) |
+| `TotalLogCount` | 총 로깅 횟수 |
+| `GenerateCreateTableSql` | 테이블 생성 SQL 출력 |
 
 ## 라이선스
 
