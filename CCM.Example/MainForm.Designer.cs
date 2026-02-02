@@ -183,7 +183,7 @@ namespace CCM.Example
             this.tabDatabase.Padding = new System.Windows.Forms.Padding(3);
             this.tabDatabase.Size = new System.Drawing.Size(849, 252);
             this.tabDatabase.TabIndex = 0;
-            this.tabDatabase.Text = "Database (MSSQL)";
+            this.tabDatabase.Text = "데이터베이스 (MSSQL)";
             this.tabDatabase.UseVisualStyleBackColor = true;
             // 
             // grpDbConnection
@@ -314,7 +314,7 @@ namespace CCM.Example
             this.tabSocket.Padding = new System.Windows.Forms.Padding(3);
             this.tabSocket.Size = new System.Drawing.Size(849, 516);
             this.tabSocket.TabIndex = 1;
-            this.tabSocket.Text = "Socket (TCP/UDP)";
+            this.tabSocket.Text = "소켓 (TCP/UDP)";
             this.tabSocket.UseVisualStyleBackColor = true;
             // 
             // grpTcpServer
@@ -334,7 +334,7 @@ namespace CCM.Example
             this.grpTcpServer.Size = new System.Drawing.Size(840, 141);
             this.grpTcpServer.TabIndex = 0;
             this.grpTcpServer.TabStop = false;
-            this.grpTcpServer.Text = "TCP Server";
+            this.grpTcpServer.Text = "TCP 서버";
             // 
             // lblTcpServerPort
             // 
@@ -343,7 +343,7 @@ namespace CCM.Example
             this.lblTcpServerPort.Name = "lblTcpServerPort";
             this.lblTcpServerPort.Size = new System.Drawing.Size(26, 13);
             this.lblTcpServerPort.TabIndex = 0;
-            this.lblTcpServerPort.Text = "Port";
+            this.lblTcpServerPort.Text = "포트";
             // 
             // numTcpServerPort
             // 
@@ -419,7 +419,7 @@ namespace CCM.Example
             this.btnTcpServerSend.Name = "btnTcpServerSend";
             this.btnTcpServerSend.Size = new System.Drawing.Size(64, 25);
             this.btnTcpServerSend.TabIndex = 8;
-            this.btnTcpServerSend.Text = "전송 (Hex)";
+            this.btnTcpServerSend.Text = "전송";
             this.btnTcpServerSend.UseVisualStyleBackColor = true;
             this.btnTcpServerSend.Click += new System.EventHandler(this.btnTcpServerSend_Click);
             // 
@@ -430,7 +430,7 @@ namespace CCM.Example
             this.chkTcpServerBroadcast.Name = "chkTcpServerBroadcast";
             this.chkTcpServerBroadcast.Size = new System.Drawing.Size(93, 17);
             this.chkTcpServerBroadcast.TabIndex = 9;
-            this.chkTcpServerBroadcast.Text = "전체 전송 (All)";
+            this.chkTcpServerBroadcast.Text = "전체 전송";
             this.chkTcpServerBroadcast.UseVisualStyleBackColor = true;
             // 
             // btnTcpServerDisconnectClient
@@ -459,7 +459,7 @@ namespace CCM.Example
             this.grpTcp.Size = new System.Drawing.Size(840, 108);
             this.grpTcp.TabIndex = 1;
             this.grpTcp.TabStop = false;
-            this.grpTcp.Text = "TCP Client";
+            this.grpTcp.Text = "TCP 클라이언트";
             // 
             // lblTcpIp
             // 
@@ -468,7 +468,7 @@ namespace CCM.Example
             this.lblTcpIp.Name = "lblTcpIp";
             this.lblTcpIp.Size = new System.Drawing.Size(17, 13);
             this.lblTcpIp.TabIndex = 0;
-            this.lblTcpIp.Text = "IP";
+            this.lblTcpIp.Text = "IP 주소";
             // 
             // txtTcpIp
             // 
@@ -485,7 +485,7 @@ namespace CCM.Example
             this.lblTcpPort.Name = "lblTcpPort";
             this.lblTcpPort.Size = new System.Drawing.Size(26, 13);
             this.lblTcpPort.TabIndex = 2;
-            this.lblTcpPort.Text = "Port";
+            this.lblTcpPort.Text = "포트";
             // 
             // numTcpPort
             // 
@@ -553,7 +553,7 @@ namespace CCM.Example
             this.btnTcpSend.Name = "btnTcpSend";
             this.btnTcpSend.Size = new System.Drawing.Size(64, 25);
             this.btnTcpSend.TabIndex = 8;
-            this.btnTcpSend.Text = "전송 (Hex)";
+            this.btnTcpSend.Text = "전송";
             this.btnTcpSend.UseVisualStyleBackColor = true;
             this.btnTcpSend.Click += new System.EventHandler(this.btnTcpSend_Click);
             // 
@@ -584,7 +584,7 @@ namespace CCM.Example
             this.lblUdpRemoteIp.Name = "lblUdpRemoteIp";
             this.lblUdpRemoteIp.Size = new System.Drawing.Size(57, 13);
             this.lblUdpRemoteIp.TabIndex = 0;
-            this.lblUdpRemoteIp.Text = "Remote IP";
+            this.lblUdpRemoteIp.Text = "원격 IP";
             // 
             // txtUdpRemoteIp
             // 
@@ -601,7 +601,7 @@ namespace CCM.Example
             this.lblUdpRemotePort.Name = "lblUdpRemotePort";
             this.lblUdpRemotePort.Size = new System.Drawing.Size(66, 13);
             this.lblUdpRemotePort.TabIndex = 2;
-            this.lblUdpRemotePort.Text = "Remote Port";
+            this.lblUdpRemotePort.Text = "원격 포트";
             // 
             // numUdpRemotePort
             // 
@@ -632,7 +632,7 @@ namespace CCM.Example
             this.lblUdpLocalPort.Name = "lblUdpLocalPort";
             this.lblUdpLocalPort.Size = new System.Drawing.Size(55, 13);
             this.lblUdpLocalPort.TabIndex = 4;
-            this.lblUdpLocalPort.Text = "Local Port";
+            this.lblUdpLocalPort.Text = "로컬 포트";
             // 
             // numUdpLocalPort
             // 
@@ -695,7 +695,7 @@ namespace CCM.Example
             this.btnUdpSend.Name = "btnUdpSend";
             this.btnUdpSend.Size = new System.Drawing.Size(64, 25);
             this.btnUdpSend.TabIndex = 10;
-            this.btnUdpSend.Text = "전송 (Hex)";
+            this.btnUdpSend.Text = "전송";
             this.btnUdpSend.UseVisualStyleBackColor = true;
             this.btnUdpSend.Click += new System.EventHandler(this.btnUdpSend_Click);
             // 
@@ -706,7 +706,7 @@ namespace CCM.Example
             this.tabSerial.Name = "tabSerial";
             this.tabSerial.Size = new System.Drawing.Size(849, 516);
             this.tabSerial.TabIndex = 2;
-            this.tabSerial.Text = "Serial Port";
+            this.tabSerial.Text = "시리얼 포트";
             this.tabSerial.UseVisualStyleBackColor = true;
             // 
             // grpSerial
@@ -726,7 +726,7 @@ namespace CCM.Example
             this.grpSerial.Size = new System.Drawing.Size(840, 130);
             this.grpSerial.TabIndex = 0;
             this.grpSerial.TabStop = false;
-            this.grpSerial.Text = "Serial Port";
+            this.grpSerial.Text = "시리얼 포트";
             // 
             // lblSerialPort
             // 
@@ -735,7 +735,7 @@ namespace CCM.Example
             this.lblSerialPort.Name = "lblSerialPort";
             this.lblSerialPort.Size = new System.Drawing.Size(26, 13);
             this.lblSerialPort.TabIndex = 0;
-            this.lblSerialPort.Text = "Port";
+            this.lblSerialPort.Text = "포트";
             // 
             // cmbSerialPort
             // 
@@ -753,7 +753,7 @@ namespace CCM.Example
             this.lblSerialBaudRate.Name = "lblSerialBaudRate";
             this.lblSerialBaudRate.Size = new System.Drawing.Size(55, 13);
             this.lblSerialBaudRate.TabIndex = 2;
-            this.lblSerialBaudRate.Text = "BaudRate";
+            this.lblSerialBaudRate.Text = "통신 속도";
             // 
             // numSerialBaudRate
             // 
@@ -831,7 +831,7 @@ namespace CCM.Example
             this.btnSerialSend.Name = "btnSerialSend";
             this.btnSerialSend.Size = new System.Drawing.Size(64, 25);
             this.btnSerialSend.TabIndex = 9;
-            this.btnSerialSend.Text = "전송 (Hex)";
+            this.btnSerialSend.Text = "전송";
             this.btnSerialSend.UseVisualStyleBackColor = true;
             this.btnSerialSend.Click += new System.EventHandler(this.btnSerialSend_Click);
             // 
@@ -893,7 +893,7 @@ namespace CCM.Example
             this.lblPlcIp.Name = "lblPlcIp";
             this.lblPlcIp.Size = new System.Drawing.Size(17, 13);
             this.lblPlcIp.TabIndex = 2;
-            this.lblPlcIp.Text = "IP";
+            this.lblPlcIp.Text = "IP 주소";
             // 
             // txtPlcIp
             // 
@@ -910,7 +910,7 @@ namespace CCM.Example
             this.lblPlcPort.Name = "lblPlcPort";
             this.lblPlcPort.Size = new System.Drawing.Size(26, 13);
             this.lblPlcPort.TabIndex = 4;
-            this.lblPlcPort.Text = "Port";
+            this.lblPlcPort.Text = "포트";
             // 
             // numPlcPort
             // 
@@ -1004,7 +1004,7 @@ namespace CCM.Example
             this.lblS7Rack.Name = "lblS7Rack";
             this.lblS7Rack.Size = new System.Drawing.Size(33, 13);
             this.lblS7Rack.TabIndex = 2;
-            this.lblS7Rack.Text = "Rack";
+            this.lblS7Rack.Text = "랙";
             // 
             // numS7Rack
             // 
@@ -1025,7 +1025,7 @@ namespace CCM.Example
             this.lblS7Slot.Name = "lblS7Slot";
             this.lblS7Slot.Size = new System.Drawing.Size(25, 13);
             this.lblS7Slot.TabIndex = 4;
-            this.lblS7Slot.Text = "Slot";
+            this.lblS7Slot.Text = "슬롯";
             // 
             // numS7Slot
             // 
@@ -1314,7 +1314,7 @@ namespace CCM.Example
             this.lblStringByteOrder.Name = "lblStringByteOrder";
             this.lblStringByteOrder.Size = new System.Drawing.Size(54, 13);
             this.lblStringByteOrder.TabIndex = 14;
-            this.lblStringByteOrder.Text = "ByteOrder";
+            this.lblStringByteOrder.Text = "바이트 순서";
             // 
             // cmbStringByteOrder
             // 
@@ -1423,14 +1423,15 @@ namespace CCM.Example
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(857, 609);
             this.Controls.Add(this.splitContainer1);
+            this.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.MinimumSize = new System.Drawing.Size(688, 647);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "IndustrialCommunication Example";
+            this.Text = "산업 통신 예제 (CCM)";
             this.tabControl1.ResumeLayout(false);
             this.tabDatabase.ResumeLayout(false);
             this.grpDbConnection.ResumeLayout(false);

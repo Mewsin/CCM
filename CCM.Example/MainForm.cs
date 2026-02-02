@@ -844,11 +844,13 @@ namespace CCM.Example
         {
             string plcType = cmbPlcType.SelectedItem?.ToString() ?? "";
 
-            // PLC 타입에 따라 기본 포트 설정
+            // PLC 타입에 따라 기본 포트, 디바이스, ByteOrder 설정
             switch (plcType)
             {
                 case "Mitsubishi MC":
                     numPlcPort.Value = 5001;
+                    txtPlcDevice.Text = "D";
+                    numPlcAddress.Value = 0;
                     pnlS7Options.Visible = false;
                     pnlXgtOptions.Visible = false;
                     pnlModbusOptions.Visible = false;
@@ -856,6 +858,8 @@ namespace CCM.Example
                     break;
                 case "Siemens S7":
                     numPlcPort.Value = 102;
+                    txtPlcDevice.Text = "DB1";
+                    numPlcAddress.Value = 0;
                     pnlS7Options.Visible = true;
                     pnlXgtOptions.Visible = false;
                     pnlModbusOptions.Visible = false;
@@ -863,6 +867,8 @@ namespace CCM.Example
                     break;
                 case "LS Electric XGT":
                     numPlcPort.Value = 2004;
+                    txtPlcDevice.Text = "M";
+                    numPlcAddress.Value = 0;
                     pnlS7Options.Visible = false;
                     pnlXgtOptions.Visible = true;
                     pnlModbusOptions.Visible = false;
@@ -870,12 +876,16 @@ namespace CCM.Example
                     break;
                 case "Modbus TCP":
                     numPlcPort.Value = 502;
+                    txtPlcDevice.Text = "";
+                    numPlcAddress.Value = 0;
                     pnlS7Options.Visible = false;
                     pnlXgtOptions.Visible = false;
                     pnlModbusOptions.Visible = true;
                     if (cmbStringByteOrder.Items.Count > 0) cmbStringByteOrder.SelectedIndex = 0; // Big Endian
                     break;
                 case "Modbus RTU":
+                    txtPlcDevice.Text = "";
+                    numPlcAddress.Value = 0;
                     pnlS7Options.Visible = false;
                     pnlXgtOptions.Visible = false;
                     pnlModbusOptions.Visible = true;
@@ -934,7 +944,22 @@ namespace CCM.Example
 
         private void cmbS7CpuType_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            // S7 CPU 타입에 따라 기본 Slot 설정
+            // S7-300, S7-400: Slot=2 (일반적)
+            // S7-200, S7-1200, S7-1500: Slot=1
+            string cpuType = cmbS7CpuType.SelectedItem?.ToString() ?? "";
+            switch (cpuType)
+            {
+                case "S7200":
+                case "S71200":
+                case "S71500":
+                    numS7Slot.Value = 1;
+                    break;
+                case "S7300":
+                case "S7400":
+                    numS7Slot.Value = 2;
+                    break;
+            }
         }
     }
 }
