@@ -437,7 +437,7 @@ namespace CCM.Example
             // 
             this.btnTcpServerDisconnectClient.Location = new System.Drawing.Point(566, 16);
             this.btnTcpServerDisconnectClient.Name = "btnTcpServerDisconnectClient";
-            this.btnTcpServerDisconnectClient.Size = new System.Drawing.Size(77, 25);
+            this.btnTcpServerDisconnectClient.Size = new System.Drawing.Size(100, 25);
             this.btnTcpServerDisconnectClient.TabIndex = 6;
             this.btnTcpServerDisconnectClient.Text = "클라이언트 해제";
             this.btnTcpServerDisconnectClient.UseVisualStyleBackColor = true;
@@ -472,7 +472,7 @@ namespace CCM.Example
             // 
             // txtTcpIp
             // 
-            this.txtTcpIp.Location = new System.Drawing.Point(43, 27);
+            this.txtTcpIp.Location = new System.Drawing.Point(60, 27);
             this.txtTcpIp.Name = "txtTcpIp";
             this.txtTcpIp.Size = new System.Drawing.Size(103, 20);
             this.txtTcpIp.TabIndex = 1;
@@ -481,7 +481,7 @@ namespace CCM.Example
             // lblTcpPort
             // 
             this.lblTcpPort.AutoSize = true;
-            this.lblTcpPort.Location = new System.Drawing.Point(154, 30);
+            this.lblTcpPort.Location = new System.Drawing.Point(170, 30);
             this.lblTcpPort.Name = "lblTcpPort";
             this.lblTcpPort.Size = new System.Drawing.Size(26, 13);
             this.lblTcpPort.TabIndex = 2;
@@ -489,7 +489,7 @@ namespace CCM.Example
             // 
             // numTcpPort
             // 
-            this.numTcpPort.Location = new System.Drawing.Point(189, 27);
+            this.numTcpPort.Location = new System.Drawing.Point(205, 27);
             this.numTcpPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -511,7 +511,7 @@ namespace CCM.Example
             // 
             // btnTcpConnect
             // 
-            this.btnTcpConnect.Location = new System.Drawing.Point(274, 25);
+            this.btnTcpConnect.Location = new System.Drawing.Point(290, 25);
             this.btnTcpConnect.Name = "btnTcpConnect";
             this.btnTcpConnect.Size = new System.Drawing.Size(64, 25);
             this.btnTcpConnect.TabIndex = 4;
@@ -521,9 +521,9 @@ namespace CCM.Example
             // 
             // btnTcpDisconnect
             // 
-            this.btnTcpDisconnect.Location = new System.Drawing.Point(344, 25);
+            this.btnTcpDisconnect.Location = new System.Drawing.Point(360, 25);
             this.btnTcpDisconnect.Name = "btnTcpDisconnect";
-            this.btnTcpDisconnect.Size = new System.Drawing.Size(64, 25);
+            this.btnTcpDisconnect.Size = new System.Drawing.Size(75, 25);
             this.btnTcpDisconnect.TabIndex = 5;
             this.btnTcpDisconnect.Text = "연결 해제";
             this.btnTcpDisconnect.UseVisualStyleBackColor = true;
@@ -533,7 +533,7 @@ namespace CCM.Example
             // 
             this.lblTcpStatus.AutoSize = true;
             this.lblTcpStatus.ForeColor = System.Drawing.Color.Gray;
-            this.lblTcpStatus.Location = new System.Drawing.Point(420, 30);
+            this.lblTcpStatus.Location = new System.Drawing.Point(445, 30);
             this.lblTcpStatus.Name = "lblTcpStatus";
             this.lblTcpStatus.Size = new System.Drawing.Size(54, 13);
             this.lblTcpStatus.TabIndex = 6;
@@ -588,16 +588,16 @@ namespace CCM.Example
             // 
             // txtUdpRemoteIp
             // 
-            this.txtUdpRemoteIp.Location = new System.Drawing.Point(69, 27);
+            this.txtUdpRemoteIp.Location = new System.Drawing.Point(60, 27);
             this.txtUdpRemoteIp.Name = "txtUdpRemoteIp";
-            this.txtUdpRemoteIp.Size = new System.Drawing.Size(86, 20);
+            this.txtUdpRemoteIp.Size = new System.Drawing.Size(95, 20);
             this.txtUdpRemoteIp.TabIndex = 1;
             this.txtUdpRemoteIp.Text = "127.0.0.1";
             // 
             // lblUdpRemotePort
             // 
             this.lblUdpRemotePort.AutoSize = true;
-            this.lblUdpRemotePort.Location = new System.Drawing.Point(163, 30);
+            this.lblUdpRemotePort.Location = new System.Drawing.Point(160, 30);
             this.lblUdpRemotePort.Name = "lblUdpRemotePort";
             this.lblUdpRemotePort.Size = new System.Drawing.Size(66, 13);
             this.lblUdpRemotePort.TabIndex = 2;
@@ -605,7 +605,7 @@ namespace CCM.Example
             // 
             // numUdpRemotePort
             // 
-            this.numUdpRemotePort.Location = new System.Drawing.Point(231, 27);
+            this.numUdpRemotePort.Location = new System.Drawing.Point(225, 27);
             this.numUdpRemotePort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -628,7 +628,7 @@ namespace CCM.Example
             // lblUdpLocalPort
             // 
             this.lblUdpLocalPort.AutoSize = true;
-            this.lblUdpLocalPort.Location = new System.Drawing.Point(300, 30);
+            this.lblUdpLocalPort.Location = new System.Drawing.Point(295, 30);
             this.lblUdpLocalPort.Name = "lblUdpLocalPort";
             this.lblUdpLocalPort.Size = new System.Drawing.Size(55, 13);
             this.lblUdpLocalPort.TabIndex = 4;
@@ -636,7 +636,7 @@ namespace CCM.Example
             // 
             // numUdpLocalPort
             // 
-            this.numUdpLocalPort.Location = new System.Drawing.Point(360, 27);
+            this.numUdpLocalPort.Location = new System.Drawing.Point(355, 27);
             this.numUdpLocalPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -653,7 +653,7 @@ namespace CCM.Example
             // 
             // btnUdpStart
             // 
-            this.btnUdpStart.Location = new System.Drawing.Point(437, 25);
+            this.btnUdpStart.Location = new System.Drawing.Point(430, 25);
             this.btnUdpStart.Name = "btnUdpStart";
             this.btnUdpStart.Size = new System.Drawing.Size(64, 25);
             this.btnUdpStart.TabIndex = 6;
@@ -663,7 +663,7 @@ namespace CCM.Example
             // 
             // btnUdpStop
             // 
-            this.btnUdpStop.Location = new System.Drawing.Point(507, 25);
+            this.btnUdpStop.Location = new System.Drawing.Point(500, 25);
             this.btnUdpStop.Name = "btnUdpStop";
             this.btnUdpStop.Size = new System.Drawing.Size(64, 25);
             this.btnUdpStop.TabIndex = 7;
@@ -675,7 +675,7 @@ namespace CCM.Example
             // 
             this.lblUdpStatus.AutoSize = true;
             this.lblUdpStatus.ForeColor = System.Drawing.Color.Gray;
-            this.lblUdpStatus.Location = new System.Drawing.Point(583, 30);
+            this.lblUdpStatus.Location = new System.Drawing.Point(575, 30);
             this.lblUdpStatus.Name = "lblUdpStatus";
             this.lblUdpStatus.Size = new System.Drawing.Size(40, 13);
             this.lblUdpStatus.TabIndex = 8;
@@ -683,7 +683,7 @@ namespace CCM.Example
             // 
             // txtUdpSendData
             // 
-            this.txtUdpSendData.Location = new System.Drawing.Point(69, 65);
+            this.txtUdpSendData.Location = new System.Drawing.Point(60, 65);
             this.txtUdpSendData.Name = "txtUdpSendData";
             this.txtUdpSendData.Size = new System.Drawing.Size(343, 20);
             this.txtUdpSendData.TabIndex = 9;
@@ -757,7 +757,7 @@ namespace CCM.Example
             // 
             // numSerialBaudRate
             // 
-            this.numSerialBaudRate.Location = new System.Drawing.Point(189, 27);
+            this.numSerialBaudRate.Location = new System.Drawing.Point(200, 27);
             this.numSerialBaudRate.Maximum = new decimal(new int[] {
             921600,
             0,
@@ -779,9 +779,9 @@ namespace CCM.Example
             // 
             // btnSerialRefresh
             // 
-            this.btnSerialRefresh.Location = new System.Drawing.Point(266, 25);
+            this.btnSerialRefresh.Location = new System.Drawing.Point(280, 25);
             this.btnSerialRefresh.Name = "btnSerialRefresh";
-            this.btnSerialRefresh.Size = new System.Drawing.Size(51, 25);
+            this.btnSerialRefresh.Size = new System.Drawing.Size(65, 25);
             this.btnSerialRefresh.TabIndex = 4;
             this.btnSerialRefresh.Text = "새로고침";
             this.btnSerialRefresh.UseVisualStyleBackColor = true;
@@ -789,7 +789,7 @@ namespace CCM.Example
             // 
             // btnSerialConnect
             // 
-            this.btnSerialConnect.Location = new System.Drawing.Point(326, 25);
+            this.btnSerialConnect.Location = new System.Drawing.Point(355, 25);
             this.btnSerialConnect.Name = "btnSerialConnect";
             this.btnSerialConnect.Size = new System.Drawing.Size(64, 25);
             this.btnSerialConnect.TabIndex = 5;
@@ -799,7 +799,7 @@ namespace CCM.Example
             // 
             // btnSerialDisconnect
             // 
-            this.btnSerialDisconnect.Location = new System.Drawing.Point(395, 25);
+            this.btnSerialDisconnect.Location = new System.Drawing.Point(425, 25);
             this.btnSerialDisconnect.Name = "btnSerialDisconnect";
             this.btnSerialDisconnect.Size = new System.Drawing.Size(64, 25);
             this.btnSerialDisconnect.TabIndex = 6;
@@ -811,7 +811,7 @@ namespace CCM.Example
             // 
             this.lblSerialStatus.AutoSize = true;
             this.lblSerialStatus.ForeColor = System.Drawing.Color.Gray;
-            this.lblSerialStatus.Location = new System.Drawing.Point(471, 30);
+            this.lblSerialStatus.Location = new System.Drawing.Point(500, 30);
             this.lblSerialStatus.Name = "lblSerialStatus";
             this.lblSerialStatus.Size = new System.Drawing.Size(29, 13);
             this.lblSerialStatus.TabIndex = 7;
@@ -897,7 +897,7 @@ namespace CCM.Example
             // 
             // txtPlcIp
             // 
-            this.txtPlcIp.Location = new System.Drawing.Point(206, 27);
+            this.txtPlcIp.Location = new System.Drawing.Point(230, 27);
             this.txtPlcIp.Name = "txtPlcIp";
             this.txtPlcIp.Size = new System.Drawing.Size(103, 20);
             this.txtPlcIp.TabIndex = 3;
@@ -906,7 +906,7 @@ namespace CCM.Example
             // lblPlcPort
             // 
             this.lblPlcPort.AutoSize = true;
-            this.lblPlcPort.Location = new System.Drawing.Point(317, 30);
+            this.lblPlcPort.Location = new System.Drawing.Point(340, 30);
             this.lblPlcPort.Name = "lblPlcPort";
             this.lblPlcPort.Size = new System.Drawing.Size(26, 13);
             this.lblPlcPort.TabIndex = 4;
@@ -914,7 +914,7 @@ namespace CCM.Example
             // 
             // numPlcPort
             // 
-            this.numPlcPort.Location = new System.Drawing.Point(343, 27);
+            this.numPlcPort.Location = new System.Drawing.Point(375, 27);
             this.numPlcPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -936,7 +936,7 @@ namespace CCM.Example
             // 
             // btnPlcConnect
             // 
-            this.btnPlcConnect.Location = new System.Drawing.Point(420, 25);
+            this.btnPlcConnect.Location = new System.Drawing.Point(450, 25);
             this.btnPlcConnect.Name = "btnPlcConnect";
             this.btnPlcConnect.Size = new System.Drawing.Size(64, 25);
             this.btnPlcConnect.TabIndex = 6;
@@ -946,9 +946,9 @@ namespace CCM.Example
             // 
             // btnPlcDisconnect
             // 
-            this.btnPlcDisconnect.Location = new System.Drawing.Point(489, 25);
+            this.btnPlcDisconnect.Location = new System.Drawing.Point(520, 25);
             this.btnPlcDisconnect.Name = "btnPlcDisconnect";
-            this.btnPlcDisconnect.Size = new System.Drawing.Size(64, 25);
+            this.btnPlcDisconnect.Size = new System.Drawing.Size(75, 25);
             this.btnPlcDisconnect.TabIndex = 7;
             this.btnPlcDisconnect.Text = "연결 해제";
             this.btnPlcDisconnect.UseVisualStyleBackColor = true;
@@ -958,7 +958,7 @@ namespace CCM.Example
             // 
             this.lblPlcStatus.AutoSize = true;
             this.lblPlcStatus.ForeColor = System.Drawing.Color.Gray;
-            this.lblPlcStatus.Location = new System.Drawing.Point(566, 30);
+            this.lblPlcStatus.Location = new System.Drawing.Point(605, 30);
             this.lblPlcStatus.Name = "lblPlcStatus";
             this.lblPlcStatus.Size = new System.Drawing.Size(54, 13);
             this.lblPlcStatus.TabIndex = 8;
@@ -1008,7 +1008,7 @@ namespace CCM.Example
             // 
             // numS7Rack
             // 
-            this.numS7Rack.Location = new System.Drawing.Point(180, 8);
+            this.numS7Rack.Location = new System.Drawing.Point(165, 8);
             this.numS7Rack.Maximum = new decimal(new int[] {
             7,
             0,
@@ -1021,7 +1021,7 @@ namespace CCM.Example
             // lblS7Slot
             // 
             this.lblS7Slot.AutoSize = true;
-            this.lblS7Slot.Location = new System.Drawing.Point(231, 11);
+            this.lblS7Slot.Location = new System.Drawing.Point(215, 11);
             this.lblS7Slot.Name = "lblS7Slot";
             this.lblS7Slot.Size = new System.Drawing.Size(25, 13);
             this.lblS7Slot.TabIndex = 4;
@@ -1029,7 +1029,7 @@ namespace CCM.Example
             // 
             // numS7Slot
             // 
-            this.numS7Slot.Location = new System.Drawing.Point(257, 8);
+            this.numS7Slot.Location = new System.Drawing.Point(245, 8);
             this.numS7Slot.Maximum = new decimal(new int[] {
             31,
             0,
@@ -1067,7 +1067,7 @@ namespace CCM.Example
             // 
             this.cmbXgtCpuType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbXgtCpuType.FormattingEnabled = true;
-            this.cmbXgtCpuType.Location = new System.Drawing.Point(51, 8);
+            this.cmbXgtCpuType.Location = new System.Drawing.Point(60, 8);
             this.cmbXgtCpuType.Name = "cmbXgtCpuType";
             this.cmbXgtCpuType.Size = new System.Drawing.Size(69, 21);
             this.cmbXgtCpuType.TabIndex = 1;
@@ -1095,7 +1095,7 @@ namespace CCM.Example
             // 
             // numModbusSlave
             // 
-            this.numModbusSlave.Location = new System.Drawing.Point(61, 5);
+            this.numModbusSlave.Location = new System.Drawing.Point(70, 5);
             this.numModbusSlave.Maximum = new decimal(new int[] {
             247,
             0,
@@ -1320,9 +1320,9 @@ namespace CCM.Example
             // 
             this.cmbStringByteOrder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbStringByteOrder.FormattingEnabled = true;
-            this.cmbStringByteOrder.Location = new System.Drawing.Point(677, 27);
+            this.cmbStringByteOrder.Location = new System.Drawing.Point(695, 27);
             this.cmbStringByteOrder.Name = "cmbStringByteOrder";
-            this.cmbStringByteOrder.Size = new System.Drawing.Size(69, 21);
+            this.cmbStringByteOrder.Size = new System.Drawing.Size(80, 21);
             this.cmbStringByteOrder.TabIndex = 15;
             // 
             // btnPlcReadWord
