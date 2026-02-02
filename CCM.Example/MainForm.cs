@@ -846,30 +846,30 @@ namespace CCM.Example
                     numPlcPort.Value = 5001;
                     pnlS7Options.Visible = false;
                     pnlModbusOptions.Visible = false;
-                    cmbStringByteOrder.SelectedIndex = 1; // Little Endian
+                    if (cmbStringByteOrder.Items.Count > 1) cmbStringByteOrder.SelectedIndex = 1; // Little Endian
                     break;
                 case "Siemens S7":
                     numPlcPort.Value = 102;
                     pnlS7Options.Visible = true;
                     pnlModbusOptions.Visible = false;
-                    cmbStringByteOrder.SelectedIndex = 0; // Big Endian
+                    if (cmbStringByteOrder.Items.Count > 0) cmbStringByteOrder.SelectedIndex = 0; // Big Endian
                     break;
                 case "LS Electric XGT":
                     numPlcPort.Value = 2004;
                     pnlS7Options.Visible = false;
                     pnlModbusOptions.Visible = false;
-                    cmbStringByteOrder.SelectedIndex = 1; // Little Endian
+                    if (cmbStringByteOrder.Items.Count > 1) cmbStringByteOrder.SelectedIndex = 1; // Little Endian
                     break;
                 case "Modbus TCP":
                     numPlcPort.Value = 502;
                     pnlS7Options.Visible = false;
                     pnlModbusOptions.Visible = true;
-                    cmbStringByteOrder.SelectedIndex = 0; // Big Endian
+                    if (cmbStringByteOrder.Items.Count > 0) cmbStringByteOrder.SelectedIndex = 0; // Big Endian
                     break;
                 case "Modbus RTU":
                     pnlS7Options.Visible = false;
                     pnlModbusOptions.Visible = true;
-                    cmbStringByteOrder.SelectedIndex = 0; // Big Endian
+                    if (cmbStringByteOrder.Items.Count > 0) cmbStringByteOrder.SelectedIndex = 0; // Big Endian
                     break;
             }
         }
