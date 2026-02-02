@@ -219,17 +219,17 @@ namespace CCM.Communication.PLC
                     _stream.Write(data, 0, data.Length);
                     _stream.Flush();
 
-                    // 응답 헤더 수신 (11바이트: 서브헤더 + 액세스 경로 + 데이터 길이)
-                    byte[] header = new byte[11];
+                    // 응답 헤더 수신 (9바이트: 서브헤더(2) + 액세스 경로(5) + 데이터 길이(2))
+                    byte[] header = new byte[9];
                     int headerRead = 0;
-                    while (headerRead < 11)
+                    while (headerRead < 9)
                     {
-                        int read = _stream.Read(header, headerRead, 11 - headerRead);
+                        int read = _stream.Read(header, headerRead, 9 - headerRead);
                         if (read == 0) break;
                         headerRead += read;
                     }
 
-                    if (headerRead < 11) return null;
+                    if (headerRead < 9) return null;
 
                     // 데이터 길이 추출 (리틀 엔디안)
                     int dataLength = header[7] | (header[8] << 8);
@@ -245,9 +245,9 @@ namespace CCM.Communication.PLC
                     }
 
                     // 전체 응답 조합
-                    byte[] fullResponse = new byte[11 + dataLength];
-                    Array.Copy(header, 0, fullResponse, 0, 11);
-                    Array.Copy(responseData, 0, fullResponse, 11, dataLength);
+                    byte[] fullResponse = new byte[9 + dataLength];
+                    Array.Copy(header, 0, fullResponse, 0, 9);
+                    Array.Copy(responseData, 0, fullResponse, 9, dataLength);
 
                     return fullResponse;
                 }
@@ -337,11 +337,11 @@ namespace CCM.Communication.PLC
         /// </summary>
         private PlcResult CheckResponse(byte[] response)
         {
-            if (response == null || response.Length < 13)
+            if (response == null || response.Length < 11)
                 return PlcResult.Fail("Invalid response");
 
-            // End Code (응답 데이터의 처음 2바이트)
-            ushort endCode = (ushort)(response[11] | (response[12] << 8));
+            // End Code (헤더 9바이트 이후 처음 2바이트)
+            ushort endCode = (ushort)(response[9] | (response[10] << 8));
 
             if (endCode != 0)
                 return PlcResult.Fail($"PLC Error Code: 0x{endCode:X4}", endCode);
@@ -377,11 +377,11 @@ namespace CCM.Communication.PLC
                 if (!checkResult.IsSuccess)
                     return PlcResult<bool[]>.Fail(checkResult.ErrorMessage, checkResult.ErrorCode);
 
-                // 비트 데이터 추출 (각 비트가 1바이트로 표현됨)
+                // 비트 데이터 추출 (각 비트가 1바이트로 표현됨, 헤더9 + EndCode2 = 11부터 시작)
                 bool[] values = new bool[count];
                 for (int i = 0; i < count; i++)
                 {
-                    values[i] = response[13 + i] != 0;
+                    values[i] = response[11 + i] != 0;
                 }
 
                 return PlcResult<bool[]>.Success(values);
@@ -454,9 +454,9 @@ namespace CCM.Communication.PLC
                 if (!checkResult.IsSuccess)
                     return PlcResult<short[]>.Fail(checkResult.ErrorMessage, checkResult.ErrorCode);
 
-                // 워드 데이터 추출
+                // 워드 데이터 추출 (헤더9 + EndCode2 = 11부터 시작)
                 byte[] data = new byte[count * 2];
-                Array.Copy(response, 13, data, 0, count * 2);
+                Array.Copy(response, 11, data, 0, count * 2);
 
                 short[] values = BytesToShorts(data, false);
                 return PlcResult<short[]>.Success(values);
@@ -521,7 +521,7 @@ namespace CCM.Communication.PLC
                 int[] values = new int[count];
                 for (int i = 0; i < count; i++)
                 {
-                    values[i] = (int)((ushort)result.Value[i * 2] | ((uint)(ushort)result.Value[i * 2 + 1] << 16));
+                    values[i] = WordsToInt32(result.Value[i * 2], result.Value[i * 2 + 1]);
                 }
 
                 return PlcResult<int[]>.Success(values);
@@ -546,8 +546,7 @@ namespace CCM.Communication.PLC
                 short[] words = new short[values.Length * 2];
                 for (int i = 0; i < values.Length; i++)
                 {
-                    words[i * 2] = (short)(values[i] & 0xFFFF);
-                    words[i * 2 + 1] = (short)((values[i] >> 16) & 0xFFFF);
+                    Int32ToWords(values[i], out words[i * 2], out words[i * 2 + 1]);
                 }
 
                 return WriteWords(device, startAddress, words);
@@ -584,12 +583,7 @@ namespace CCM.Communication.PLC
                 float[] values = new float[count];
                 for (int i = 0; i < count; i++)
                 {
-                    byte[] bytes = new byte[4];
-                    bytes[0] = (byte)(result.Value[i * 2] & 0xFF);
-                    bytes[1] = (byte)((result.Value[i * 2] >> 8) & 0xFF);
-                    bytes[2] = (byte)(result.Value[i * 2 + 1] & 0xFF);
-                    bytes[3] = (byte)((result.Value[i * 2 + 1] >> 8) & 0xFF);
-                    values[i] = BitConverter.ToSingle(bytes, 0);
+                    values[i] = WordsToFloat(result.Value[i * 2], result.Value[i * 2 + 1]);
                 }
 
                 return PlcResult<float[]>.Success(values);
@@ -614,9 +608,7 @@ namespace CCM.Communication.PLC
                 short[] words = new short[values.Length * 2];
                 for (int i = 0; i < values.Length; i++)
                 {
-                    byte[] bytes = BitConverter.GetBytes(values[i]);
-                    words[i * 2] = (short)(bytes[0] | (bytes[1] << 8));
-                    words[i * 2 + 1] = (short)(bytes[2] | (bytes[3] << 8));
+                    FloatToWords(values[i], out words[i * 2], out words[i * 2 + 1]);
                 }
 
                 return WriteWords(device, startAddress, words);

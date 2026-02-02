@@ -92,6 +92,7 @@ namespace CCM.Communication.PLC
         public ModbusClient()
         {
             Port = 502; // Modbus TCP 기본 포트
+            ByteOrder = ByteOrderMode.ABCD; // Modbus는 Big Endian
         }
 
         /// <summary>
@@ -103,6 +104,7 @@ namespace CCM.Communication.PLC
             IpAddress = ipAddress;
             Port = port;
             SlaveAddress = slaveAddress;
+            ByteOrder = ByteOrderMode.ABCD; // Modbus는 Big Endian
         }
 
         /// <summary>
@@ -115,6 +117,7 @@ namespace CCM.Communication.PLC
             BaudRate = baudRate;
             Parity = parity;
             SlaveAddress = slaveAddress;
+            ByteOrder = ByteOrderMode.ABCD; // Modbus는 Big Endian
         }
 
         #endregion

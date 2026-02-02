@@ -645,9 +645,26 @@ namespace CCM.Example
                 if (result.IsSuccess)
                 {
                     StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < result.Value.Length; i++)
+                    if (chkPlcDisplayAsString.Checked)
                     {
-                        sb.Append($"{device}{address + i}={result.Value[i]} ");
+                        // 문자열로 표시
+                        StringBuilder strBuilder = new StringBuilder();
+                        foreach (short val in result.Value)
+                        {
+                            byte lowByte = (byte)(val & 0xFF);
+                            byte highByte = (byte)((val >> 8) & 0xFF);
+                            if (lowByte >= 0x20 && lowByte <= 0x7E) strBuilder.Append((char)lowByte);
+                            if (highByte >= 0x20 && highByte <= 0x7E) strBuilder.Append((char)highByte);
+                        }
+                        sb.Append($"{device}{address}~{device}{address + count - 1} = \"{strBuilder}\"");
+                    }
+                    else
+                    {
+                        // 숫자로 표시
+                        for (int i = 0; i < result.Value.Length; i++)
+                        {
+                            sb.Append($"{device}{address + i}={result.Value[i]} ");
+                        }
                     }
                     txtPlcResult.Text = sb.ToString();
                     AppendLog($"[PLC 읽기] {sb}");
@@ -677,13 +694,30 @@ namespace CCM.Example
 
                 string device = txtPlcDevice.Text;
                 int address = (int)numPlcAddress.Value;
-                short value = (short)numPlcWriteValue.Value;
 
-                var result = plc.WriteWord(device, address, value);
+                PlcResult result;
+                string logMessage;
+
+                if (chkPlcDisplayAsString.Checked)
+                {
+                    // 문자열 모드: 문자열을 워드 배열로 변환하여 쓰기
+                    string strValue = txtPlcWriteString.Text ?? "";
+                    short[] words = StringToWords(strValue);
+                    result = plc.WriteWords(device, address, words);
+                    logMessage = $"{device}{address}~{device}{address + words.Length - 1}=\"{strValue}\"";
+                }
+                else
+                {
+                    // 숫자 모드: 단일 워드 쓰기
+                    short value = (short)numPlcWriteValue.Value;
+                    result = plc.WriteWord(device, address, value);
+                    logMessage = $"{device}{address}={value}";
+                }
+
                 if (result.IsSuccess)
                 {
                     txtPlcResult.Text = "쓰기 성공";
-                    AppendLog($"[PLC 쓰기] {device}{address}={value}");
+                    AppendLog($"[PLC 쓰기] {logMessage}");
                 }
                 else
                 {
@@ -695,6 +729,28 @@ namespace CCM.Example
             {
                 AppendLog($"[PLC] 쓰기 오류: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// 문자열을 워드 배열로 변환 (PLC 쓰기용)
+        /// </summary>
+        private short[] StringToWords(string str)
+        {
+            if (string.IsNullOrEmpty(str)) return new short[0];
+            
+            // 짝수 길이로 맞춤
+            int paddedLength = (str.Length + 1) / 2 * 2;
+            byte[] bytes = new byte[paddedLength];
+            byte[] strBytes = System.Text.Encoding.ASCII.GetBytes(str);
+            Array.Copy(strBytes, bytes, strBytes.Length);
+
+            // 바이트를 워드로 변환 (Little Endian)
+            short[] words = new short[paddedLength / 2];
+            for (int i = 0; i < words.Length; i++)
+            {
+                words[i] = (short)(bytes[i * 2] | (bytes[i * 2 + 1] << 8));
+            }
+            return words;
         }
 
         private void btnPlcReadBit_Click(object sender, EventArgs e)
@@ -794,6 +850,14 @@ namespace CCM.Example
                     pnlModbusOptions.Visible = true;
                     break;
             }
+        }
+
+        private void chkPlcDisplayAsString_CheckedChanged(object sender, EventArgs e)
+        {
+            // 문자열 모드일 때 입력 컨트롤 전환
+            bool isStringMode = chkPlcDisplayAsString.Checked;
+            numPlcWriteValue.Visible = !isStringMode;
+            txtPlcWriteString.Visible = isStringMode;
         }
 
         #endregion

@@ -18,6 +18,21 @@ namespace CCM.Communication.Interfaces
     }
 
     /// <summary>
+    /// 바이트 오더 모드 (32비트 값 0x12345678 기준)
+    /// </summary>
+    public enum ByteOrderMode
+    {
+        /// <summary>Big Endian: 12 34 56 78 (High byte first, Siemens 기본)</summary>
+        ABCD,
+        /// <summary>Little Endian: 78 56 34 12 (Low byte first, Mitsubishi 기본)</summary>
+        DCBA,
+        /// <summary>Mid-Big Endian (Byte Swap): 34 12 78 56</summary>
+        BADC,
+        /// <summary>Mid-Little Endian (Word Swap): 56 78 12 34</summary>
+        CDAB
+    }
+
+    /// <summary>
     /// PLC 읽기/쓰기 결과
     /// </summary>
     public class PlcResult

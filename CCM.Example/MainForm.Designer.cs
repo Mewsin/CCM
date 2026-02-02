@@ -106,6 +106,8 @@ namespace CCM.Example
             this.numPlcCount = new System.Windows.Forms.NumericUpDown();
             this.numPlcWriteValue = new System.Windows.Forms.NumericUpDown();
             this.chkPlcBitValue = new System.Windows.Forms.CheckBox();
+            this.chkPlcDisplayAsString = new System.Windows.Forms.CheckBox();
+            this.txtPlcWriteString = new System.Windows.Forms.TextBox();
             this.btnPlcReadWord = new System.Windows.Forms.Button();
             this.btnPlcWriteWord = new System.Windows.Forms.Button();
             this.btnPlcReadBit = new System.Windows.Forms.Button();
@@ -1125,7 +1127,9 @@ namespace CCM.Example
             this.grpPlcReadWrite.Controls.Add(this.numPlcCount);
             this.grpPlcReadWrite.Controls.Add(this.lblPlcWriteValue);
             this.grpPlcReadWrite.Controls.Add(this.numPlcWriteValue);
+            this.grpPlcReadWrite.Controls.Add(this.txtPlcWriteString);
             this.grpPlcReadWrite.Controls.Add(this.chkPlcBitValue);
+            this.grpPlcReadWrite.Controls.Add(this.chkPlcDisplayAsString);
             this.grpPlcReadWrite.Controls.Add(this.btnPlcReadWord);
             this.grpPlcReadWrite.Controls.Add(this.btnPlcWriteWord);
             this.grpPlcReadWrite.Controls.Add(this.btnPlcReadBit);
@@ -1220,6 +1224,15 @@ namespace CCM.Example
             this.numPlcWriteValue.Value = new decimal(new int[] { 100, 0, 0, 0 });
 
             // 
+            // txtPlcWriteString
+            // 
+            this.txtPlcWriteString.Location = new System.Drawing.Point(440, 25);
+            this.txtPlcWriteString.Name = "txtPlcWriteString";
+            this.txtPlcWriteString.Size = new System.Drawing.Size(80, 21);
+            this.txtPlcWriteString.TabIndex = 10;
+            this.txtPlcWriteString.Visible = false;
+
+            // 
             // chkPlcBitValue
             // 
             this.chkPlcBitValue.AutoSize = true;
@@ -1229,6 +1242,18 @@ namespace CCM.Example
             this.chkPlcBitValue.TabIndex = 8;
             this.chkPlcBitValue.Text = "비트 ON";
             this.chkPlcBitValue.UseVisualStyleBackColor = true;
+
+            // 
+            // chkPlcDisplayAsString
+            // 
+            this.chkPlcDisplayAsString.AutoSize = true;
+            this.chkPlcDisplayAsString.Location = new System.Drawing.Point(620, 27);
+            this.chkPlcDisplayAsString.Name = "chkPlcDisplayAsString";
+            this.chkPlcDisplayAsString.Size = new System.Drawing.Size(88, 16);
+            this.chkPlcDisplayAsString.TabIndex = 9;
+            this.chkPlcDisplayAsString.Text = "문자열 표시";
+            this.chkPlcDisplayAsString.UseVisualStyleBackColor = true;
+            this.chkPlcDisplayAsString.CheckedChanged += new System.EventHandler(this.chkPlcDisplayAsString_CheckedChanged);
 
             // 
             // btnPlcReadWord
@@ -1469,6 +1494,8 @@ namespace CCM.Example
         private System.Windows.Forms.NumericUpDown numPlcCount;
         private System.Windows.Forms.NumericUpDown numPlcWriteValue;
         private System.Windows.Forms.CheckBox chkPlcBitValue;
+        private System.Windows.Forms.CheckBox chkPlcDisplayAsString;
+        private System.Windows.Forms.TextBox txtPlcWriteString;
         private System.Windows.Forms.Button btnPlcReadWord;
         private System.Windows.Forms.Button btnPlcWriteWord;
         private System.Windows.Forms.Button btnPlcReadBit;

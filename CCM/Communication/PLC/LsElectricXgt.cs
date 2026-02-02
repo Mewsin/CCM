@@ -63,12 +63,14 @@ namespace CCM.Communication.PLC
         public LsElectricXgt()
         {
             Port = 2004; // FEnet TCP 기본 포트
+            ByteOrder = ByteOrderMode.DCBA; // LS XGT는 Little Endian
         }
 
         public LsElectricXgt(string ipAddress, int port = 2004)
         {
             IpAddress = ipAddress;
             Port = port;
+            ByteOrder = ByteOrderMode.DCBA; // LS XGT는 Little Endian
         }
 
         #endregion

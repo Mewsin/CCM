@@ -607,7 +607,40 @@ plc.WriteDWord("D", 100, 123456789);
 // D100에 Real(Float) 쓰기
 plc.WriteReal("D", 100, 3.14f);
 
+// D100~D104 문자열 읽기 (10자)
+var strResult = plc.ReadString("D", 100, 10);
+if (strResult.IsSuccess)
+    Console.WriteLine($"문자열 = {strResult.Value}");  // 예: "ABCD000007"
+
+// D100에 문자열 쓰기
+plc.WriteString("D", 100, "HELLO");
+
 plc.Disconnect();
+```
+
+#### 워드 ↔ 문자열 변환
+
+PLC에서 문자열은 워드 단위로 저장됩니다. 각 워드(16비트)에 2개의 ASCII 문자가 들어갑니다.
+
+| 워드 | 값 (Decimal) | 값 (Hex) | 문자 |
+|------|-------------|----------|------|
+| D100 | 16961 | 0x4241 | "AB" |
+| D101 | 17475 | 0x4443 | "CD" |
+| D102 | 12336 | 0x3030 | "00" |
+
+**변환 방식** (Little Endian):
+- Low Byte → 첫 번째 문자
+- High Byte → 두 번째 문자
+
+```csharp
+// 워드를 문자로 변환
+short wordValue = 16961;  // 0x4241
+char char1 = (char)(wordValue & 0xFF);         // 'A' (0x41)
+char char2 = (char)((wordValue >> 8) & 0xFF);  // 'B' (0x42)
+
+// 문자를 워드로 변환
+string str = "AB";
+short word = (short)(str[0] | (str[1] << 8));  // 16961
 ```
 
 </details>
@@ -718,6 +751,73 @@ modbusRtu.Disconnect();
 ```
 
 </details>
+
+---
+
+## 바이트 오더 (Byte Order) 설정
+
+### 개념
+
+32비트 값(DWord, Float)을 읽고 쓸 때 **바이트 순서**가 PLC마다 다를 수 있습니다. `ByteOrder` 프로퍼티를 통해 장비에 맞게 설정할 수 있습니다.
+
+### ByteOrderMode 옵션
+
+값 `0x12345678` 기준:
+
+| 모드 | 메모리 순서 | 설명 | 기본 사용 |
+|------|-------------|------|-----------|
+| `ABCD` | 12 34 56 78 | Big Endian (MSB first) | Siemens, Modbus |
+| `DCBA` | 78 56 34 12 | Little Endian (LSB first) | Mitsubishi, LS XGT |
+| `BADC` | 34 12 78 56 | Mid-Big (Byte Swap) | 일부 장비 |
+| `CDAB` | 56 78 12 34 | Mid-Little (Word Swap) | 일부 장비 |
+
+### PLC별 기본값
+
+| PLC | 기본 ByteOrder | 변경 필요 시 |
+|-----|----------------|-------------|
+| Mitsubishi | `DCBA` | 구형 장비나 특수 설정 |
+| Siemens | `ABCD` | - |
+| Modbus | `ABCD` | 제조사별로 다를 수 있음 |
+| LS XGT | `DCBA` | - |
+
+### 사용 예제
+
+```csharp
+using CCM.Communication.PLC;
+using CCM.Communication.Interfaces;
+
+var plc = new MitsubishiMcProtocol("192.168.0.10", 5001);
+
+// 기본값: DCBA (Little Endian)
+plc.Connect();
+
+// 값이 뒤바뀌어 보이면 ByteOrder 변경
+plc.ByteOrder = ByteOrderMode.CDAB;  // Word Swap
+// 또는
+plc.ByteOrder = ByteOrderMode.BADC;  // Byte Swap
+
+// DWord/Float 읽기 - ByteOrder 설정에 따라 자동 변환
+var dword = plc.ReadDWord("D", 100);
+var realValue = plc.ReadReal("D", 200);
+
+plc.Disconnect();
+```
+
+### Modbus 장비별 ByteOrder
+
+Modbus 프로토콜은 표준이 Big Endian이지만, **32비트 값의 워드 순서는 제조사마다 다릅니다**:
+
+```csharp
+var modbus = new ModbusClient("192.168.0.20", 502);
+modbus.Connect();
+
+// 기본: ABCD (Big Endian)
+// 값이 이상하면 아래 옵션 시도:
+modbus.ByteOrder = ByteOrderMode.CDAB;  // Word Swap (일부 Schneider, ABB)
+modbus.ByteOrder = ByteOrderMode.BADC;  // Byte Swap (드문 경우)
+
+modbus.Disconnect();
+```
 
 ---
 

@@ -80,6 +80,7 @@ namespace CCM.Communication.PLC
         public SiemensS7Protocol()
         {
             Port = 102; // S7 Protocol 기본 포트
+            ByteOrder = ByteOrderMode.ABCD; // Siemens는 Big Endian
         }
 
         public SiemensS7Protocol(string ipAddress, S7CpuType cpuType = S7CpuType.S71200, byte rack = 0, byte slot = 1)
@@ -89,6 +90,7 @@ namespace CCM.Communication.PLC
             CpuType = cpuType;
             Rack = rack;
             Slot = slot;
+            ByteOrder = ByteOrderMode.ABCD; // Siemens는 Big Endian
         }
 
         #endregion

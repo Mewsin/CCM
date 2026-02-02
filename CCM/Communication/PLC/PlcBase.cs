@@ -39,6 +39,11 @@ namespace CCM.Communication.PLC
         public int ReceiveTimeout { get; set; } = 3000;
 
         /// <summary>
+        /// 32비트 값(DWord, Float)의 바이트 오더 모드
+        /// </summary>
+        public ByteOrderMode ByteOrder { get; set; } = ByteOrderMode.DCBA;
+
+        /// <summary>
         /// 연결 상태
         /// </summary>
         public abstract bool IsConnected { get; }
@@ -299,6 +304,94 @@ namespace CCM.Communication.PLC
             int copyLength = Math.Min(strBytes.Length, length);
             Array.Copy(strBytes, result, copyLength);
             return result;
+        }
+
+        /// <summary>
+        /// 2개의 워드를 32비트 정수로 변환 (ByteOrder 설정에 따름)
+        /// </summary>
+        protected int WordsToInt32(short word0, short word1)
+        {
+            ushort w0 = (ushort)word0;
+            ushort w1 = (ushort)word1;
+
+            switch (ByteOrder)
+            {
+                case ByteOrderMode.ABCD: // Big Endian: Word1이 상위
+                    return (w1 << 16) | w0;
+                case ByteOrderMode.DCBA: // Little Endian: Word0이 하위 (기본)
+                    return (w1 << 16) | w0;
+                case ByteOrderMode.BADC: // Byte Swap
+                    w0 = SwapBytes(w0);
+                    w1 = SwapBytes(w1);
+                    return (w1 << 16) | w0;
+                case ByteOrderMode.CDAB: // Word Swap
+                    return (w0 << 16) | w1;
+                default:
+                    return (w1 << 16) | w0;
+            }
+        }
+
+        /// <summary>
+        /// 32비트 정수를 2개의 워드로 변환 (ByteOrder 설정에 따름)
+        /// </summary>
+        protected void Int32ToWords(int value, out short word0, out short word1)
+        {
+            ushort w0, w1;
+
+            switch (ByteOrder)
+            {
+                case ByteOrderMode.ABCD: // Big Endian
+                    w0 = (ushort)(value & 0xFFFF);
+                    w1 = (ushort)((value >> 16) & 0xFFFF);
+                    break;
+                case ByteOrderMode.DCBA: // Little Endian (기본)
+                    w0 = (ushort)(value & 0xFFFF);
+                    w1 = (ushort)((value >> 16) & 0xFFFF);
+                    break;
+                case ByteOrderMode.BADC: // Byte Swap
+                    w0 = SwapBytes((ushort)(value & 0xFFFF));
+                    w1 = SwapBytes((ushort)((value >> 16) & 0xFFFF));
+                    break;
+                case ByteOrderMode.CDAB: // Word Swap
+                    w0 = (ushort)((value >> 16) & 0xFFFF);
+                    w1 = (ushort)(value & 0xFFFF);
+                    break;
+                default:
+                    w0 = (ushort)(value & 0xFFFF);
+                    w1 = (ushort)((value >> 16) & 0xFFFF);
+                    break;
+            }
+
+            word0 = (short)w0;
+            word1 = (short)w1;
+        }
+
+        /// <summary>
+        /// 2개의 워드를 float으로 변환 (ByteOrder 설정에 따름)
+        /// </summary>
+        protected float WordsToFloat(short word0, short word1)
+        {
+            int intValue = WordsToInt32(word0, word1);
+            byte[] bytes = BitConverter.GetBytes(intValue);
+            return BitConverter.ToSingle(bytes, 0);
+        }
+
+        /// <summary>
+        /// float을 2개의 워드로 변환 (ByteOrder 설정에 따름)
+        /// </summary>
+        protected void FloatToWords(float value, out short word0, out short word1)
+        {
+            byte[] bytes = BitConverter.GetBytes(value);
+            int intValue = BitConverter.ToInt32(bytes, 0);
+            Int32ToWords(intValue, out word0, out word1);
+        }
+
+        /// <summary>
+        /// 워드 내 바이트 스왑
+        /// </summary>
+        protected ushort SwapBytes(ushort value)
+        {
+            return (ushort)((value >> 8) | (value << 8));
         }
 
         #endregion
