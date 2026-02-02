@@ -46,6 +46,10 @@ namespace CCM.Example
             cmbS7CpuType.Items.AddRange(Enum.GetNames(typeof(S7CpuType)));
             cmbS7CpuType.SelectedIndex = 3; // S71200
 
+            // ByteOrder 콤보박스 초기화
+            cmbStringByteOrder.Items.AddRange(new object[] { "Big (AB)", "Little (BA)" });
+            cmbStringByteOrder.SelectedIndex = 0; // Big Endian (Siemens 기본값)
+
             // 시리얼 포트 목록
             RefreshSerialPorts();
 
@@ -647,14 +651,27 @@ namespace CCM.Example
                     StringBuilder sb = new StringBuilder();
                     if (chkPlcDisplayAsString.Checked)
                     {
-                        // 문자열로 표시
+                        // 문자열로 표시 (ByteOrder에 따라 변환)
                         StringBuilder strBuilder = new StringBuilder();
+                        bool isBigEndian = cmbStringByteOrder.SelectedIndex == 0; // Big (AB)
+                        
                         foreach (short val in result.Value)
                         {
                             byte lowByte = (byte)(val & 0xFF);
                             byte highByte = (byte)((val >> 8) & 0xFF);
-                            if (lowByte >= 0x20 && lowByte <= 0x7E) strBuilder.Append((char)lowByte);
-                            if (highByte >= 0x20 && highByte <= 0x7E) strBuilder.Append((char)highByte);
+                            
+                            if (isBigEndian)
+                            {
+                                // Big Endian: High byte first (AB) - Siemens
+                                if (highByte >= 0x20 && highByte <= 0x7E) strBuilder.Append((char)highByte);
+                                if (lowByte >= 0x20 && lowByte <= 0x7E) strBuilder.Append((char)lowByte);
+                            }
+                            else
+                            {
+                                // Little Endian: Low byte first (BA) - Mitsubishi, LS
+                                if (lowByte >= 0x20 && lowByte <= 0x7E) strBuilder.Append((char)lowByte);
+                                if (highByte >= 0x20 && highByte <= 0x7E) strBuilder.Append((char)highByte);
+                            }
                         }
                         sb.Append($"{device}{address}~{device}{address + count - 1} = \"{strBuilder}\"");
                     }
@@ -829,25 +846,30 @@ namespace CCM.Example
                     numPlcPort.Value = 5001;
                     pnlS7Options.Visible = false;
                     pnlModbusOptions.Visible = false;
+                    cmbStringByteOrder.SelectedIndex = 1; // Little Endian
                     break;
                 case "Siemens S7":
                     numPlcPort.Value = 102;
                     pnlS7Options.Visible = true;
                     pnlModbusOptions.Visible = false;
+                    cmbStringByteOrder.SelectedIndex = 0; // Big Endian
                     break;
                 case "LS Electric XGT":
                     numPlcPort.Value = 2004;
                     pnlS7Options.Visible = false;
                     pnlModbusOptions.Visible = false;
+                    cmbStringByteOrder.SelectedIndex = 1; // Little Endian
                     break;
                 case "Modbus TCP":
                     numPlcPort.Value = 502;
                     pnlS7Options.Visible = false;
                     pnlModbusOptions.Visible = true;
+                    cmbStringByteOrder.SelectedIndex = 0; // Big Endian
                     break;
                 case "Modbus RTU":
                     pnlS7Options.Visible = false;
                     pnlModbusOptions.Visible = true;
+                    cmbStringByteOrder.SelectedIndex = 0; // Big Endian
                     break;
             }
         }

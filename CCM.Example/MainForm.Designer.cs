@@ -108,6 +108,8 @@ namespace CCM.Example
             this.chkPlcBitValue = new System.Windows.Forms.CheckBox();
             this.chkPlcDisplayAsString = new System.Windows.Forms.CheckBox();
             this.txtPlcWriteString = new System.Windows.Forms.TextBox();
+            this.lblStringByteOrder = new System.Windows.Forms.Label();
+            this.cmbStringByteOrder = new System.Windows.Forms.ComboBox();
             this.btnPlcReadWord = new System.Windows.Forms.Button();
             this.btnPlcWriteWord = new System.Windows.Forms.Button();
             this.btnPlcReadBit = new System.Windows.Forms.Button();
@@ -1130,6 +1132,8 @@ namespace CCM.Example
             this.grpPlcReadWrite.Controls.Add(this.txtPlcWriteString);
             this.grpPlcReadWrite.Controls.Add(this.chkPlcBitValue);
             this.grpPlcReadWrite.Controls.Add(this.chkPlcDisplayAsString);
+            this.grpPlcReadWrite.Controls.Add(this.lblStringByteOrder);
+            this.grpPlcReadWrite.Controls.Add(this.cmbStringByteOrder);
             this.grpPlcReadWrite.Controls.Add(this.btnPlcReadWord);
             this.grpPlcReadWrite.Controls.Add(this.btnPlcWriteWord);
             this.grpPlcReadWrite.Controls.Add(this.btnPlcReadBit);
@@ -1254,6 +1258,26 @@ namespace CCM.Example
             this.chkPlcDisplayAsString.Text = "문자열 표시";
             this.chkPlcDisplayAsString.UseVisualStyleBackColor = true;
             this.chkPlcDisplayAsString.CheckedChanged += new System.EventHandler(this.chkPlcDisplayAsString_CheckedChanged);
+
+            // 
+            // lblStringByteOrder
+            // 
+            this.lblStringByteOrder.AutoSize = true;
+            this.lblStringByteOrder.Location = new System.Drawing.Point(720, 28);
+            this.lblStringByteOrder.Name = "lblStringByteOrder";
+            this.lblStringByteOrder.Size = new System.Drawing.Size(65, 12);
+            this.lblStringByteOrder.TabIndex = 14;
+            this.lblStringByteOrder.Text = "ByteOrder";
+
+            // 
+            // cmbStringByteOrder
+            // 
+            this.cmbStringByteOrder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbStringByteOrder.FormattingEnabled = true;
+            this.cmbStringByteOrder.Location = new System.Drawing.Point(790, 25);
+            this.cmbStringByteOrder.Name = "cmbStringByteOrder";
+            this.cmbStringByteOrder.Size = new System.Drawing.Size(80, 20);
+            this.cmbStringByteOrder.TabIndex = 15;
 
             // 
             // btnPlcReadWord
@@ -1512,5 +1536,7 @@ namespace CCM.Example
         private System.Windows.Forms.Label lblS7Rack;
         private System.Windows.Forms.Label lblS7Slot;
         private System.Windows.Forms.Label lblModbusSlave;
+        private System.Windows.Forms.Label lblStringByteOrder;
+        private System.Windows.Forms.ComboBox cmbStringByteOrder;
     }
 }

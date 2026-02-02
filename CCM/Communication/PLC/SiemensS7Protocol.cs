@@ -83,14 +83,41 @@ namespace CCM.Communication.PLC
             ByteOrder = ByteOrderMode.ABCD; // Siemens는 Big Endian
         }
 
-        public SiemensS7Protocol(string ipAddress, S7CpuType cpuType = S7CpuType.S71200, byte rack = 0, byte slot = 1)
+        /// <summary>
+        /// Siemens S7 Protocol 생성자
+        /// </summary>
+        /// <param name="ipAddress">PLC IP 주소</param>
+        /// <param name="cpuType">CPU 타입</param>
+        /// <param name="rack">랙 번호 (기본값: 0)</param>
+        /// <param name="slot">슬롯 번호 (기본값: CPU 타입에 따라 자동 설정. S7-300/400=2, S7-1200/1500=1)</param>
+        public SiemensS7Protocol(string ipAddress, S7CpuType cpuType = S7CpuType.S71200, byte rack = 0, byte? slot = null)
         {
             IpAddress = ipAddress;
             Port = 102;
             CpuType = cpuType;
             Rack = rack;
-            Slot = slot;
+            // slot이 명시되지 않으면 CPU 타입에 따라 기본값 설정
+            Slot = slot ?? GetDefaultSlot(cpuType);
             ByteOrder = ByteOrderMode.ABCD; // Siemens는 Big Endian
+        }
+
+        /// <summary>
+        /// CPU 타입에 따른 기본 슬롯 번호 반환
+        /// </summary>
+        private static byte GetDefaultSlot(S7CpuType cpuType)
+        {
+            switch (cpuType)
+            {
+                case S7CpuType.S7200:
+                    return 1;
+                case S7CpuType.S7300:
+                case S7CpuType.S7400:
+                    return 2;  // S7-300/400은 보통 Slot 2에 CPU가 위치
+                case S7CpuType.S71200:
+                case S7CpuType.S71500:
+                default:
+                    return 1;  // S7-1200/1500은 Slot 1
+            }
         }
 
         #endregion
