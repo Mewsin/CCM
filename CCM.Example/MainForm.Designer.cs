@@ -221,7 +221,7 @@ namespace CCM.Example
             // 
             this.btnDbDisconnect.Location = new System.Drawing.Point(644, 25);
             this.btnDbDisconnect.Name = "btnDbDisconnect";
-            this.btnDbDisconnect.Size = new System.Drawing.Size(64, 25);
+            this.btnDbDisconnect.Size = new System.Drawing.Size(70, 25);
             this.btnDbDisconnect.TabIndex = 2;
             this.btnDbDisconnect.Text = "연결 해제";
             this.btnDbDisconnect.UseVisualStyleBackColor = true;
@@ -231,7 +231,7 @@ namespace CCM.Example
             // 
             this.lblDbStatus.AutoSize = true;
             this.lblDbStatus.ForeColor = System.Drawing.Color.Gray;
-            this.lblDbStatus.Location = new System.Drawing.Point(720, 30);
+            this.lblDbStatus.Location = new System.Drawing.Point(723, 30);
             this.lblDbStatus.Name = "lblDbStatus";
             this.lblDbStatus.Size = new System.Drawing.Size(59, 15);
             this.lblDbStatus.TabIndex = 3;
@@ -255,15 +255,15 @@ namespace CCM.Example
             this.txtDbQuery.Location = new System.Drawing.Point(5, 22);
             this.txtDbQuery.Multiline = true;
             this.txtDbQuery.Name = "txtDbQuery";
-            this.txtDbQuery.Size = new System.Drawing.Size(626, 76);
+            this.txtDbQuery.Size = new System.Drawing.Size(724, 76);
             this.txtDbQuery.TabIndex = 0;
             this.txtDbQuery.Text = "SELECT TOP 10 * FROM sys.tables";
             // 
             // btnDbExecuteQuery
             // 
-            this.btnDbExecuteQuery.Location = new System.Drawing.Point(643, 22);
+            this.btnDbExecuteQuery.Location = new System.Drawing.Point(735, 20);
             this.btnDbExecuteQuery.Name = "btnDbExecuteQuery";
-            this.btnDbExecuteQuery.Size = new System.Drawing.Size(86, 25);
+            this.btnDbExecuteQuery.Size = new System.Drawing.Size(99, 25);
             this.btnDbExecuteQuery.TabIndex = 1;
             this.btnDbExecuteQuery.Text = "SELECT 실행";
             this.btnDbExecuteQuery.UseVisualStyleBackColor = true;
@@ -271,9 +271,9 @@ namespace CCM.Example
             // 
             // btnDbExecuteNonQuery
             // 
-            this.btnDbExecuteNonQuery.Location = new System.Drawing.Point(643, 53);
+            this.btnDbExecuteNonQuery.Location = new System.Drawing.Point(735, 48);
             this.btnDbExecuteNonQuery.Name = "btnDbExecuteNonQuery";
-            this.btnDbExecuteNonQuery.Size = new System.Drawing.Size(86, 25);
+            this.btnDbExecuteNonQuery.Size = new System.Drawing.Size(99, 25);
             this.btnDbExecuteNonQuery.TabIndex = 2;
             this.btnDbExecuteNonQuery.Text = "NonQuery 실행";
             this.btnDbExecuteNonQuery.UseVisualStyleBackColor = true;
@@ -281,9 +281,9 @@ namespace CCM.Example
             // 
             // btnDbExecuteProcedure
             // 
-            this.btnDbExecuteProcedure.Location = new System.Drawing.Point(737, 22);
+            this.btnDbExecuteProcedure.Location = new System.Drawing.Point(735, 76);
             this.btnDbExecuteProcedure.Name = "btnDbExecuteProcedure";
-            this.btnDbExecuteProcedure.Size = new System.Drawing.Size(86, 25);
+            this.btnDbExecuteProcedure.Size = new System.Drawing.Size(99, 25);
             this.btnDbExecuteProcedure.TabIndex = 3;
             this.btnDbExecuteProcedure.Text = "프로시저 실행";
             this.btnDbExecuteProcedure.UseVisualStyleBackColor = true;
@@ -301,7 +301,7 @@ namespace CCM.Example
             this.dgvDbResult.Name = "dgvDbResult";
             this.dgvDbResult.ReadOnly = true;
             this.dgvDbResult.RowTemplate.Height = 23;
-            this.dgvDbResult.Size = new System.Drawing.Size(840, 185);
+            this.dgvDbResult.Size = new System.Drawing.Size(840, 187);
             this.dgvDbResult.TabIndex = 2;
             // 
             // tabSocket
@@ -438,7 +438,7 @@ namespace CCM.Example
             // 
             this.btnTcpServerDisconnectClient.Location = new System.Drawing.Point(566, 16);
             this.btnTcpServerDisconnectClient.Name = "btnTcpServerDisconnectClient";
-            this.btnTcpServerDisconnectClient.Size = new System.Drawing.Size(100, 25);
+            this.btnTcpServerDisconnectClient.Size = new System.Drawing.Size(111, 25);
             this.btnTcpServerDisconnectClient.TabIndex = 6;
             this.btnTcpServerDisconnectClient.Text = "클라이언트 해제";
             this.btnTcpServerDisconnectClient.UseVisualStyleBackColor = true;
@@ -703,9 +703,9 @@ namespace CCM.Example
             // tabSerial
             // 
             this.tabSerial.Controls.Add(this.grpSerial);
-            this.tabSerial.Location = new System.Drawing.Point(4, 22);
+            this.tabSerial.Location = new System.Drawing.Point(4, 24);
             this.tabSerial.Name = "tabSerial";
-            this.tabSerial.Size = new System.Drawing.Size(849, 383);
+            this.tabSerial.Size = new System.Drawing.Size(849, 381);
             this.tabSerial.TabIndex = 2;
             this.tabSerial.Text = "시리얼 포트";
             this.tabSerial.UseVisualStyleBackColor = true;
@@ -840,9 +840,9 @@ namespace CCM.Example
             // 
             this.tabPlc.Controls.Add(this.grpPlcConnection);
             this.tabPlc.Controls.Add(this.grpPlcReadWrite);
-            this.tabPlc.Location = new System.Drawing.Point(4, 22);
+            this.tabPlc.Location = new System.Drawing.Point(4, 24);
             this.tabPlc.Name = "tabPlc";
-            this.tabPlc.Size = new System.Drawing.Size(849, 383);
+            this.tabPlc.Size = new System.Drawing.Size(849, 381);
             this.tabPlc.TabIndex = 3;
             this.tabPlc.Text = "PLC";
             this.tabPlc.UseVisualStyleBackColor = true;
@@ -1432,7 +1432,7 @@ namespace CCM.Example
             this.MinimumSize = new System.Drawing.Size(688, 647);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "산업 통신 예제 (CCM)";
+            this.Text = ".";
             this.tabControl1.ResumeLayout(false);
             this.tabDatabase.ResumeLayout(false);
             this.grpDbConnection.ResumeLayout(false);
