@@ -327,27 +327,57 @@ namespace CCM.Communication.PLC
             _serialPort.DiscardInBuffer();
             _serialPort.Write(data, 0, data.Length);
 
-            // 응답 대기
+            // 응답 대기 (3.5 character time 기준, 9600bps에서 약 4ms)
+            // 하지만 안전을 위해 약간 더 대기
             Thread.Sleep(50);
 
-            // 응답 수신
-            int bytesToRead = _serialPort.BytesToRead;
-            if (bytesToRead == 0)
+            // 완전한 프레임이 도착할 때까지 대기
+            // RTU 프레임은 최소 5바이트: SlaveAddr(1) + FC(1) + Data(1+) + CRC(2)
+            List<byte> responseBuffer = new List<byte>();
+            int elapsed = 50;
+            int lastBytesRead = 0;
+            int stableCount = 0;
+            const int STABLE_THRESHOLD = 3; // 연속 3번 동일하면 프레임 완료로 간주
+
+            while (elapsed < timeout)
             {
-                // 타임아웃까지 대기
-                int elapsed = 50;
-                while (bytesToRead == 0 && elapsed < timeout)
+                int bytesToRead = _serialPort.BytesToRead;
+                
+                if (bytesToRead > 0)
                 {
-                    Thread.Sleep(10);
-                    elapsed += 10;
-                    bytesToRead = _serialPort.BytesToRead;
+                    byte[] chunk = new byte[bytesToRead];
+                    _serialPort.Read(chunk, 0, bytesToRead);
+                    responseBuffer.AddRange(chunk);
+                    
+                    // 프레임 완료 여부 확인
+                    // 프레임 끝 감지: 일정 시간 동안 추가 데이터가 없으면 완료
+                    lastBytesRead = responseBuffer.Count;
+                    stableCount = 0;
                 }
+                else if (responseBuffer.Count > 0)
+                {
+                    // 데이터를 받은 후 추가 데이터가 없으면 안정화 카운트 증가
+                    if (responseBuffer.Count == lastBytesRead)
+                    {
+                        stableCount++;
+                        if (stableCount >= STABLE_THRESHOLD && responseBuffer.Count >= 5)
+                        {
+                            // 프레임 완료로 간주
+                            break;
+                        }
+                    }
+                }
+
+                Thread.Sleep(10);
+                elapsed += 10;
             }
 
-            if (bytesToRead == 0) return null;
+            if (responseBuffer.Count == 0) return null;
 
-            byte[] response = new byte[bytesToRead];
-            _serialPort.Read(response, 0, bytesToRead);
+            byte[] response = responseBuffer.ToArray();
+
+            // 최소 길이 검증 (SlaveAddr + FC + CRC = 4바이트, 실제로는 최소 5바이트)
+            if (response.Length < 5) return null;
 
             // CRC 검증
             if (!VerifyCrc(response))
@@ -457,7 +487,10 @@ namespace CCM.Communication.PLC
         /// </summary>
         private PlcResult CheckResponse(byte[] response, byte expectedFunctionCode)
         {
-            if (response == null || response.Length < 2)
+            // TCP: MBAP(7) + FC(1) + ErrorCode(1) = 최소 9바이트
+            // RTU: Addr(1) + FC(1) + ErrorCode(1) + CRC(2) = 최소 5바이트
+            int minLength = (Mode == ModbusMode.Tcp) ? 9 : 5;
+            if (response == null || response.Length < minLength)
                 return PlcResult.Fail("Invalid response");
 
             int fcOffset = (Mode == ModbusMode.Tcp) ? 7 : 1;

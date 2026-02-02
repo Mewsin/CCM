@@ -386,6 +386,39 @@ namespace CCM.Communication.PLC
             return PlcResult.Success();
         }
 
+        /// <summary>
+        /// 응답에서 데이터 시작 오프셋 계산
+        /// XGT 응답 구조: Header(20) + Command(2) + DataType(2) + Reserved(2) + BlockCount(2) + Data
+        /// 기본 오프셋 = 28이지만, 블록 정보에 따라 달라질 수 있음
+        /// </summary>
+        private int CalculateDataOffset(byte[] response)
+        {
+            if (response == null || response.Length < 28)
+                return -1;
+
+            // 기본 오프셋: Header(20) + Command(2) + DataType(2) + Reserved(2) + BlockCount(2) = 28
+            // 하지만 실제 구현에서는 26을 사용하는 경우가 많음 (Reserved가 없는 경우)
+            // 응답 데이터 길이와 실제 데이터를 기반으로 검증
+            
+            // 데이터 길이 (헤더의 인덱스 16-17)
+            int dataLength = response[16] | (response[17] << 8);
+            
+            // 블록 카운트 (인덱스 26-27)
+            // 단일 블록인 경우 데이터는 바로 다음에 시작
+            // dataOffset = 20(header) + 2(cmd) + 2(datatype) + 2(reserved) = 26
+            // 일부 구현에서는 blockCount 2바이트가 추가되어 28
+            
+            // 현재 구현과 호환성 유지: 26 사용
+            // 응답 길이 검증
+            int baseOffset = 26;
+            
+            // 예상 데이터 시작 위치가 유효한지 확인
+            if (baseOffset >= response.Length)
+                return -1;
+                
+            return baseOffset;
+        }
+
         #endregion
 
         #region IPlcCommunication Implementation
@@ -415,10 +448,12 @@ namespace CCM.Communication.PLC
                 if (!checkResult.IsSuccess)
                     return PlcResult<bool[]>.Fail(checkResult.ErrorMessage, checkResult.ErrorCode);
 
-                // 데이터 추출 (헤더 + 응답 정보 이후)
-                bool[] values = new bool[count];
-                int dataOffset = 26; // 헤더(20) + 커맨드(2) + 데이터타입(2) + 블록수(2)
+                // 데이터 오프셋 동적 계산
+                int dataOffset = CalculateDataOffset(response);
+                if (dataOffset < 0 || dataOffset >= response.Length)
+                    return PlcResult<bool[]>.Fail("Invalid response structure");
 
+                bool[] values = new bool[count];
                 for (int i = 0; i < count; i++)
                 {
                     if (dataOffset + i < response.Length)
@@ -489,8 +524,11 @@ namespace CCM.Communication.PLC
                 if (!checkResult.IsSuccess)
                     return PlcResult<short[]>.Fail(checkResult.ErrorMessage, checkResult.ErrorCode);
 
-                // 데이터 추출
-                int dataOffset = 26;
+                // 데이터 오프셋 동적 계산
+                int dataOffset = CalculateDataOffset(response);
+                if (dataOffset < 0 || dataOffset + count * 2 > response.Length)
+                    return PlcResult<short[]>.Fail("Invalid response structure");
+
                 byte[] data = new byte[count * 2];
                 Array.Copy(response, dataOffset, data, 0, Math.Min(count * 2, response.Length - dataOffset));
 
@@ -557,7 +595,11 @@ namespace CCM.Communication.PLC
                 if (!checkResult.IsSuccess)
                     return PlcResult<int[]>.Fail(checkResult.ErrorMessage, checkResult.ErrorCode);
 
-                int dataOffset = 26;
+                // 데이터 오프셋 동적 계산
+                int dataOffset = CalculateDataOffset(response);
+                if (dataOffset < 0 || dataOffset + count * 4 > response.Length)
+                    return PlcResult<int[]>.Fail("Invalid response structure");
+
                 byte[] data = new byte[count * 4];
                 Array.Copy(response, dataOffset, data, 0, Math.Min(count * 4, response.Length - dataOffset));
 

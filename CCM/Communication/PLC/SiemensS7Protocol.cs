@@ -158,7 +158,7 @@ namespace CCM.Communication.PLC
 
             // COTP Connect Confirm 수신
             byte[] response = ReceivePacket();
-            if (response == null || response.Length < 4)
+            if (response == null || response.Length < 6)
                 return false;
 
             // PDU Type 확인
@@ -218,7 +218,7 @@ namespace CCM.Communication.PLC
             _stream.Flush();
 
             byte[] response = ReceivePacket();
-            if (response == null || response.Length < 20)
+            if (response == null || response.Length < 27)
                 return false;
 
             // PDU 크기 추출
@@ -302,6 +302,9 @@ namespace CCM.Communication.PLC
 
             // 패킷 길이 추출
             int length = (tpktHeader[2] << 8) | tpktHeader[3];
+
+            // 길이 검증 (최소 TPKT 헤더 크기)
+            if (length < 4) return null;
 
             // 나머지 데이터 수신
             byte[] data = new byte[length];
