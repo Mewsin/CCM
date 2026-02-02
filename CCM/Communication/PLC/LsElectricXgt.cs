@@ -43,14 +43,42 @@ namespace CCM.Communication.PLC
         #region Properties
 
         /// <summary>
-        /// PLC 정보
+        /// PLC 정보 (CPU 타입에 따라 자동 설정)
+        /// XGK: 0x33, XGI: 0x34, XGR: 0x35
         /// </summary>
-        public byte PlcInfo { get; set; } = 0x33;  // XGK CPU
+        public byte PlcInfo { get; set; } = 0x33;
+
+        /// <summary>
+        /// CPU 타입
+        /// </summary>
+        public XgtCpuType CpuType
+        {
+            get => _cpuType;
+            set
+            {
+                _cpuType = value;
+                PlcInfo = GetPlcInfoByCpuType(value);
+            }
+        }
+        private XgtCpuType _cpuType = XgtCpuType.XGK;
 
         /// <summary>
         /// CPU 정보
         /// </summary>
         public byte CpuInfo { get; set; } = 0x00;
+
+        private static byte GetPlcInfoByCpuType(XgtCpuType cpuType)
+        {
+            switch (cpuType)
+            {
+                case XgtCpuType.XGK: return 0x33;
+                case XgtCpuType.XGI: return 0x34;
+                case XgtCpuType.XGR: return 0x35;
+                case XgtCpuType.XGB: return 0x31;
+                case XgtCpuType.XEC: return 0x32;
+                default: return 0x33;
+            }
+        }
 
         public override bool IsConnected => _client != null && _client.Connected;
 
@@ -66,10 +94,11 @@ namespace CCM.Communication.PLC
             ByteOrder = ByteOrderMode.DCBA; // LS XGT는 Little Endian
         }
 
-        public LsElectricXgt(string ipAddress, int port = 2004)
+        public LsElectricXgt(string ipAddress, int port = 2004, XgtCpuType cpuType = XgtCpuType.XGK)
         {
             IpAddress = ipAddress;
             Port = port;
+            CpuType = cpuType;
             ByteOrder = ByteOrderMode.DCBA; // LS XGT는 Little Endian
         }
 
@@ -218,42 +247,57 @@ namespace CCM.Communication.PLC
 
         /// <summary>
         /// XGT 프레임 요청 생성
+        /// FEnet 프로토콜 헤더 구조 (20 bytes):
+        /// - Company ID: 10 bytes (LSIS-XGT + padding)
+        /// - Reserved: 2 bytes (PLC Info, CPU Info - 일부 구현에서 사용)
+        /// - Reserved: 1 byte
+        /// - Source of Frame: 1 byte (0x33: Client/HMI, 0x11: Server/PLC)
+        /// - Invoke ID: 2 bytes
+        /// - Data Length: 2 bytes
+        /// - Reserved: 1 byte (FEnet Slot)
+        /// - Checksum: 1 byte (헤더 체크섬)
         /// </summary>
         private byte[] BuildRequest(ushort command, byte[] applicationData)
         {
             List<byte> frame = new List<byte>();
 
-            // Header (LSIS-XGT)
-            frame.AddRange(Encoding.ASCII.GetBytes(HEADER));
+            // Company ID (10 bytes) - "LSIS-XGT" + 패딩
+            byte[] headerBytes = Encoding.ASCII.GetBytes(HEADER);
+            frame.AddRange(headerBytes);
+            // 10바이트로 패딩
+            for (int i = headerBytes.Length; i < 10; i++)
+                frame.Add(0x00);
 
-            // Reserved (2 bytes)
-            frame.Add(0x00);
-            frame.Add(0x00);
-
-            // PLC Info
+            // PLC Info (1 byte) - CPU 타입에 따라 설정
             frame.Add(PlcInfo);
 
-            // CPU Info
+            // CPU Info (1 byte)
             frame.Add(CpuInfo);
 
-            // Source of Frame (0: PC -> PLC)
+            // Reserved (1 byte)
             frame.Add(0x00);
 
-            // Invoke ID (2 bytes)
+            // Source of Frame (1 byte) - 0x33: Client(HMI) -> PLC
+            frame.Add(0x33);
+
+            // Invoke ID (2 bytes, Little Endian)
             _invokeId++;
             frame.Add((byte)(_invokeId & 0xFF));
             frame.Add((byte)((_invokeId >> 8) & 0xFF));
 
-            // Data Length (2 bytes)
+            // Data Length (2 bytes, Little Endian)
             int dataLength = applicationData?.Length ?? 0;
             frame.Add((byte)(dataLength & 0xFF));
             frame.Add((byte)((dataLength >> 8) & 0xFF));
 
-            // Slot No (Fixed)
+            // FEnet Slot (1 byte)
             frame.Add(0x00);
 
-            // Base No (Fixed)
-            frame.Add(0x00);
+            // Checksum (1 byte) - 헤더 19바이트의 합계 % 256
+            byte checksum = 0;
+            for (int i = 0; i < frame.Count; i++)
+                checksum += frame[i];
+            frame.Add(checksum);
 
             // Application Data
             if (applicationData != null && applicationData.Length > 0)
@@ -371,52 +415,56 @@ namespace CCM.Communication.PLC
 
         /// <summary>
         /// 응답 검증
+        /// XGT 응답 구조 (정상 응답):
+        /// - Header: 20 bytes (인덱스 0-19)
+        /// - Command Echo: 2 bytes (인덱스 20-21) - 읽기=0x0055, 쓰기=0x0059
+        /// - Data Type: 2 bytes (인덱스 22-23)
+        /// - Reserved: 4 bytes (인덱스 24-27)
+        /// - Block Count: 2 bytes (인덱스 28-29)
+        /// - Data Count: 2 bytes (인덱스 30-31)
+        /// - Data: 인덱스 32부터
         /// </summary>
         private PlcResult CheckResponse(byte[] response)
         {
             if (response == null || response.Length < 22)
-                return PlcResult.Fail("Invalid response");
+                return PlcResult.Fail("Invalid response: too short");
 
-            // 에러 코드 확인 (응답 데이터의 처음 2바이트)
-            ushort errorCode = (ushort)(response[20] | (response[21] << 8));
-
-            if (errorCode != 0)
-                return PlcResult.Fail($"XGT Error Code: 0x{errorCode:X4}", errorCode);
+            // Command Echo 확인 (인덱스 20-21)
+            ushort commandEcho = (ushort)(response[20] | (response[21] << 8));
+            
+            // 읽기 응답(0x0055) 또는 쓰기 응답(0x0059)이어야 함
+            if (commandEcho != CMD_READ_RESPONSE && commandEcho != CMD_WRITE_RESPONSE)
+            {
+                // 에러 응답일 수 있음 - NAK 코드 확인
+                return PlcResult.Fail($"XGT Error/NAK: 0x{commandEcho:X4}", commandEcho);
+            }
 
             return PlcResult.Success();
         }
 
         /// <summary>
-        /// 응답에서 데이터 시작 오프셋 계산
-        /// XGT 응답 구조: Header(20) + Command(2) + DataType(2) + Reserved(2) + BlockCount(2) + Data
-        /// 기본 오프셋 = 28이지만, 블록 정보에 따라 달라질 수 있음
+        /// 응답에서 데이터 시작 오프셋 및 데이터 개수 추출
+        /// XGT 응답 구조:
+        /// Header(20) + Command(2) + DataType(2) + Reserved(4) + BlockCount(2) + DataCount(2) + Data
+        /// 데이터 시작 오프셋 = 32
         /// </summary>
         private int CalculateDataOffset(byte[] response)
         {
-            if (response == null || response.Length < 28)
-                return -1;
-
-            // 기본 오프셋: Header(20) + Command(2) + DataType(2) + Reserved(2) + BlockCount(2) = 28
-            // 하지만 실제 구현에서는 26을 사용하는 경우가 많음 (Reserved가 없는 경우)
-            // 응답 데이터 길이와 실제 데이터를 기반으로 검증
-            
-            // 데이터 길이 (헤더의 인덱스 16-17)
-            int dataLength = response[16] | (response[17] << 8);
-            
-            // 블록 카운트 (인덱스 26-27)
-            // 단일 블록인 경우 데이터는 바로 다음에 시작
-            // dataOffset = 20(header) + 2(cmd) + 2(datatype) + 2(reserved) = 26
-            // 일부 구현에서는 blockCount 2바이트가 추가되어 28
-            
-            // 현재 구현과 호환성 유지: 26 사용
-            // 응답 길이 검증
-            int baseOffset = 26;
-            
-            // 예상 데이터 시작 위치가 유효한지 확인
-            if (baseOffset >= response.Length)
+            // 최소 헤더 + 명령 + 데이터타입 + 예약 + 블록수 + 데이터수 = 32 bytes
+            if (response == null || response.Length < 32)
                 return -1;
                 
-            return baseOffset;
+            return 32;
+        }
+        
+        /// <summary>
+        /// 응답에서 실제 데이터 바이트 수 추출 (인덱스 30-31)
+        /// </summary>
+        private int GetResponseDataCount(byte[] response)
+        {
+            if (response == null || response.Length < 32)
+                return 0;
+            return response[30] | (response[31] << 8);
         }
 
         #endregion
@@ -515,24 +563,29 @@ namespace CCM.Communication.PLC
                 if (!IsConnected)
                     return PlcResult<short[]>.Fail("Not connected");
 
-                string deviceAddress = BuildDeviceAddress(device, startAddress, PlcDeviceType.Word);
-                byte[] appData = BuildReadApplicationData(deviceAddress, count, DATA_TYPE_WORD);
-                byte[] request = BuildRequest(CMD_READ_REQUEST, appData);
-                byte[] response = SendAndReceive(request, ReceiveTimeout);
+                // 여러 워드를 읽을 때는 개별적으로 읽어서 합침
+                short[] values = new short[count];
+                
+                for (int i = 0; i < count; i++)
+                {
+                    string deviceAddress = BuildDeviceAddress(device, startAddress + i, PlcDeviceType.Word);
+                    byte[] appData = BuildReadApplicationData(deviceAddress, 1, DATA_TYPE_WORD);
+                    byte[] request = BuildRequest(CMD_READ_REQUEST, appData);
+                    byte[] response = SendAndReceive(request, ReceiveTimeout);
 
-                var checkResult = CheckResponse(response);
-                if (!checkResult.IsSuccess)
-                    return PlcResult<short[]>.Fail(checkResult.ErrorMessage, checkResult.ErrorCode);
+                    var checkResult = CheckResponse(response);
+                    if (!checkResult.IsSuccess)
+                        return PlcResult<short[]>.Fail($"Read failed at {device}{startAddress + i}: {checkResult.ErrorMessage}", checkResult.ErrorCode);
 
-                // 데이터 오프셋 동적 계산
-                int dataOffset = CalculateDataOffset(response);
-                if (dataOffset < 0 || dataOffset + count * 2 > response.Length)
-                    return PlcResult<short[]>.Fail("Invalid response structure");
+                    // 데이터 오프셋
+                    int dataOffset = CalculateDataOffset(response);
+                    if (dataOffset < 0 || dataOffset + 2 > response.Length)
+                        return PlcResult<short[]>.Fail($"Invalid response at {device}{startAddress + i}");
 
-                byte[] data = new byte[count * 2];
-                Array.Copy(response, dataOffset, data, 0, Math.Min(count * 2, response.Length - dataOffset));
+                    // 1 워드(2 바이트) 읽기
+                    values[i] = (short)(response[dataOffset] | (response[dataOffset + 1] << 8));
+                }
 
-                short[] values = BytesToShorts(data, false);
                 return PlcResult<short[]>.Success(values);
             }
             catch (Exception ex)
@@ -744,5 +797,22 @@ namespace CCM.Communication.PLC
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// LS XGT CPU 타입
+    /// </summary>
+    public enum XgtCpuType
+    {
+        /// <summary>XGK 시리즈</summary>
+        XGK,
+        /// <summary>XGI 시리즈</summary>
+        XGI,
+        /// <summary>XGR 시리즈</summary>
+        XGR,
+        /// <summary>XGB 시리즈</summary>
+        XGB,
+        /// <summary>XEC 시리즈</summary>
+        XEC
     }
 }

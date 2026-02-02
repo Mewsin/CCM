@@ -50,6 +50,10 @@ namespace CCM.Example
             cmbStringByteOrder.Items.AddRange(new object[] { "Big (AB)", "Little (BA)" });
             cmbStringByteOrder.SelectedIndex = 0; // Big Endian (Siemens 기본값)
 
+            // XGT CPU 타입 콤보박스 초기화
+            cmbXgtCpuType.Items.AddRange(Enum.GetNames(typeof(XgtCpuType)));
+            cmbXgtCpuType.SelectedIndex = 0; // XGK
+
             // 시리얼 포트 목록
             RefreshSerialPorts();
 
@@ -554,11 +558,12 @@ namespace CCM.Example
                         break;
 
                     case "LS Electric XGT":
-                        _lsPlc = new LsElectricXgt(txtPlcIp.Text, (int)numPlcPort.Value);
+                        XgtCpuType xgtCpuType = (XgtCpuType)Enum.Parse(typeof(XgtCpuType), cmbXgtCpuType.SelectedItem?.ToString() ?? "XGK");
+                        _lsPlc = new LsElectricXgt(txtPlcIp.Text, (int)numPlcPort.Value, xgtCpuType);
                         connected = _lsPlc.Connect();
                         if (connected)
                         {
-                            UpdatePlcStatus(true, "LS Electric XGT 연결됨");
+                            UpdatePlcStatus(true, $"LS Electric XGT ({xgtCpuType}) 연결됨");
                         }
                         break;
 
@@ -845,29 +850,34 @@ namespace CCM.Example
                 case "Mitsubishi MC":
                     numPlcPort.Value = 5001;
                     pnlS7Options.Visible = false;
+                    pnlXgtOptions.Visible = false;
                     pnlModbusOptions.Visible = false;
                     if (cmbStringByteOrder.Items.Count > 1) cmbStringByteOrder.SelectedIndex = 1; // Little Endian
                     break;
                 case "Siemens S7":
                     numPlcPort.Value = 102;
                     pnlS7Options.Visible = true;
+                    pnlXgtOptions.Visible = false;
                     pnlModbusOptions.Visible = false;
                     if (cmbStringByteOrder.Items.Count > 0) cmbStringByteOrder.SelectedIndex = 0; // Big Endian
                     break;
                 case "LS Electric XGT":
                     numPlcPort.Value = 2004;
                     pnlS7Options.Visible = false;
+                    pnlXgtOptions.Visible = true;
                     pnlModbusOptions.Visible = false;
                     if (cmbStringByteOrder.Items.Count > 1) cmbStringByteOrder.SelectedIndex = 1; // Little Endian
                     break;
                 case "Modbus TCP":
                     numPlcPort.Value = 502;
                     pnlS7Options.Visible = false;
+                    pnlXgtOptions.Visible = false;
                     pnlModbusOptions.Visible = true;
                     if (cmbStringByteOrder.Items.Count > 0) cmbStringByteOrder.SelectedIndex = 0; // Big Endian
                     break;
                 case "Modbus RTU":
                     pnlS7Options.Visible = false;
+                    pnlXgtOptions.Visible = false;
                     pnlModbusOptions.Visible = true;
                     if (cmbStringByteOrder.Items.Count > 0) cmbStringByteOrder.SelectedIndex = 0; // Big Endian
                     break;
@@ -921,5 +931,10 @@ namespace CCM.Example
         }
 
         #endregion
+
+        private void cmbS7CpuType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

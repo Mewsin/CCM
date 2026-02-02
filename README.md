@@ -36,12 +36,12 @@ Visual Studio 2019 / .NET Framework 4.7.2 기반의 산업용 통신 라이브�
 
 ### 4. PLC 통신
 
-| PLC | 클래스 | 프로토콜 | 기본 포트 |
-|-----|--------|----------|-----------|
-| Mitsubishi | `MitsubishiMcProtocol` | MC Protocol 3E Frame | 5001 |
-| Siemens | `SiemensS7Protocol` | S7 Protocol (ISO-on-TCP) | 102 |
-| LS Electric | `LsElectricXgt` | XGT FEnet Protocol | 2004 |
-| Modbus | `ModbusClient` | Modbus TCP / RTU | 502 |
+| PLC | 클래스 | 프로토콜 | 기본 포트 | 비고 |
+|-----|--------|----------|-----------|------|
+| Mitsubishi | `MitsubishiMcProtocol` | MC Protocol 3E Frame | 5001 | Q/L/iQ-R 시리즈 |
+| Siemens | `SiemensS7Protocol` | S7 Protocol (ISO-on-TCP) | 102 | S7-300/400/1200/1500 |
+| LS Electric | `LsElectricXgt` | XGT FEnet Protocol | 2004 | XGK/XGI/XGR/XGB/XEC |
+| Modbus | `ModbusClient` | Modbus TCP / RTU | 502 | 표준 Modbus |
 
 **공통 기능:**
 - Bit 읽기/쓰기 (단일, 연속)
@@ -684,25 +684,53 @@ plc.Disconnect();
 <summary><b>LS Electric XGT</b></summary>
 
 ```csharp
-var plc = new LsElectricXgt("192.168.0.10", 2004);
+using CCM.Communication.PLC;
+
+// CPU 타입 지정 (XGK, XGI, XGR, XGB, XEC)
+var plc = new LsElectricXgt("192.168.0.10", 2004, XgtCpuType.XGI);
 plc.Connect();
 
-// %MW100 워드 읽기
-var result = plc.ReadWord("%MW", 100);
+// 또는 기본값(XGK) 사용
+var plc2 = new LsElectricXgt("192.168.0.10", 2004);
+plc2.CpuType = XgtCpuType.XGI;  // 나중에 변경 가능
+plc2.Connect();
+
+// %MW100 워드 읽기 (device="M", address=100 → %MW100)
+var result = plc.ReadWord("M", 100);
 if (result.IsSuccess)
     Console.WriteLine($"%MW100 = {result.Value}");
 
-// %MW100~%MW109 연속 읽기
-var words = plc.ReadWords("%MW", 100, 10);
+// %RW0~%RW4 연속 읽기 (5개 워드)
+var words = plc.ReadWords("R", 0, 5);
 
 // %MX100 비트 쓰기
-plc.WriteBit("%MX", 100, true);
+plc.WriteBit("M", 100, true);
 
-// %MW100에 값 쓰기
-plc.WriteWord("%MW", 100, 1234);
+// %DW0에 값 쓰기
+plc.WriteWord("D", 0, 1234);
 
 plc.Disconnect();
 ```
+
+#### CPU 타입별 PlcInfo 값
+
+| CPU 타입 | PlcInfo | 설명 |
+|----------|---------|------|
+| `XGK` | 0x33 | XGK 시리즈 (기본값) |
+| `XGI` | 0x34 | XGI 시리즈 |
+| `XGR` | 0x35 | XGR 시리즈 |
+| `XGB` | 0x31 | XGB 시리즈 |
+| `XEC` | 0x32 | XEC 시리즈 |
+
+#### 디바이스 주소 형식
+
+| 디바이스 | 워드 형식 | 비트 형식 | 범위 예시 |
+|----------|----------|----------|----------|
+| M (내부 릴레이) | %MW | %MX | 0~131071 |
+| D (데이터 레지스터) | %DW | %DX | 0~65535 |
+| R (파일 레지스터) | %RW | %RX | 0~32767 |
+| I (입력) | %IW | %IX | 0~127.15.3 |
+| Q (출력) | %QW | %QX | 0~127.15.3 |
 
 </details>
 
