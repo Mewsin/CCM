@@ -170,7 +170,7 @@ namespace CCM.Example
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(857, 345);
+            this.tabControl1.Size = new System.Drawing.Size(857, 409);
             this.tabControl1.TabIndex = 0;
             // 
             // tabDatabase
@@ -178,10 +178,10 @@ namespace CCM.Example
             this.tabDatabase.Controls.Add(this.grpDbConnection);
             this.tabDatabase.Controls.Add(this.grpDbQuery);
             this.tabDatabase.Controls.Add(this.dgvDbResult);
-            this.tabDatabase.Location = new System.Drawing.Point(4, 22);
+            this.tabDatabase.Location = new System.Drawing.Point(4, 24);
             this.tabDatabase.Name = "tabDatabase";
             this.tabDatabase.Padding = new System.Windows.Forms.Padding(3);
-            this.tabDatabase.Size = new System.Drawing.Size(849, 252);
+            this.tabDatabase.Size = new System.Drawing.Size(849, 381);
             this.tabDatabase.TabIndex = 0;
             this.tabDatabase.Text = "데이터베이스 (MSSQL)";
             this.tabDatabase.UseVisualStyleBackColor = true;
@@ -203,7 +203,7 @@ namespace CCM.Example
             // 
             this.txtDbConnectionString.Location = new System.Drawing.Point(5, 27);
             this.txtDbConnectionString.Name = "txtDbConnectionString";
-            this.txtDbConnectionString.Size = new System.Drawing.Size(558, 20);
+            this.txtDbConnectionString.Size = new System.Drawing.Size(558, 23);
             this.txtDbConnectionString.TabIndex = 0;
             this.txtDbConnectionString.Text = "Server=localhost;Database=TestDB;User Id=sa;Password=;";
             // 
@@ -233,7 +233,7 @@ namespace CCM.Example
             this.lblDbStatus.ForeColor = System.Drawing.Color.Gray;
             this.lblDbStatus.Location = new System.Drawing.Point(720, 30);
             this.lblDbStatus.Name = "lblDbStatus";
-            this.lblDbStatus.Size = new System.Drawing.Size(54, 13);
+            this.lblDbStatus.Size = new System.Drawing.Size(59, 15);
             this.lblDbStatus.TabIndex = 3;
             this.lblDbStatus.Text = "연결 안됨";
             // 
@@ -301,7 +301,7 @@ namespace CCM.Example
             this.dgvDbResult.Name = "dgvDbResult";
             this.dgvDbResult.ReadOnly = true;
             this.dgvDbResult.RowTemplate.Height = 23;
-            this.dgvDbResult.Size = new System.Drawing.Size(840, 313);
+            this.dgvDbResult.Size = new System.Drawing.Size(840, 185);
             this.dgvDbResult.TabIndex = 2;
             // 
             // tabSocket
@@ -309,10 +309,10 @@ namespace CCM.Example
             this.tabSocket.Controls.Add(this.grpTcpServer);
             this.tabSocket.Controls.Add(this.grpTcp);
             this.tabSocket.Controls.Add(this.grpUdp);
-            this.tabSocket.Location = new System.Drawing.Point(4, 22);
+            this.tabSocket.Location = new System.Drawing.Point(4, 24);
             this.tabSocket.Name = "tabSocket";
             this.tabSocket.Padding = new System.Windows.Forms.Padding(3);
-            this.tabSocket.Size = new System.Drawing.Size(849, 516);
+            this.tabSocket.Size = new System.Drawing.Size(849, 381);
             this.tabSocket.TabIndex = 1;
             this.tabSocket.Text = "소켓 (TCP/UDP)";
             this.tabSocket.UseVisualStyleBackColor = true;
@@ -341,7 +341,7 @@ namespace CCM.Example
             this.lblTcpServerPort.AutoSize = true;
             this.lblTcpServerPort.Location = new System.Drawing.Point(9, 27);
             this.lblTcpServerPort.Name = "lblTcpServerPort";
-            this.lblTcpServerPort.Size = new System.Drawing.Size(26, 13);
+            this.lblTcpServerPort.Size = new System.Drawing.Size(31, 15);
             this.lblTcpServerPort.TabIndex = 0;
             this.lblTcpServerPort.Text = "포트";
             // 
@@ -359,7 +359,7 @@ namespace CCM.Example
             0,
             0});
             this.numTcpServerPort.Name = "numTcpServerPort";
-            this.numTcpServerPort.Size = new System.Drawing.Size(69, 20);
+            this.numTcpServerPort.Size = new System.Drawing.Size(69, 23);
             this.numTcpServerPort.TabIndex = 1;
             this.numTcpServerPort.Value = new decimal(new int[] {
             9000,
@@ -393,23 +393,24 @@ namespace CCM.Example
             this.lblTcpServerStatus.ForeColor = System.Drawing.Color.Gray;
             this.lblTcpServerStatus.Location = new System.Drawing.Point(266, 27);
             this.lblTcpServerStatus.Name = "lblTcpServerStatus";
-            this.lblTcpServerStatus.Size = new System.Drawing.Size(40, 13);
+            this.lblTcpServerStatus.Size = new System.Drawing.Size(43, 15);
             this.lblTcpServerStatus.TabIndex = 4;
             this.lblTcpServerStatus.Text = "중지됨";
             // 
             // lstTcpServerClients
             // 
             this.lstTcpServerClients.FormattingEnabled = true;
+            this.lstTcpServerClients.ItemHeight = 15;
             this.lstTcpServerClients.Location = new System.Drawing.Point(343, 16);
             this.lstTcpServerClients.Name = "lstTcpServerClients";
-            this.lstTcpServerClients.Size = new System.Drawing.Size(215, 108);
+            this.lstTcpServerClients.Size = new System.Drawing.Size(215, 94);
             this.lstTcpServerClients.TabIndex = 5;
             // 
             // txtTcpServerSendData
             // 
             this.txtTcpServerSendData.Location = new System.Drawing.Point(43, 60);
             this.txtTcpServerSendData.Name = "txtTcpServerSendData";
-            this.txtTcpServerSendData.Size = new System.Drawing.Size(215, 20);
+            this.txtTcpServerSendData.Size = new System.Drawing.Size(215, 23);
             this.txtTcpServerSendData.TabIndex = 7;
             this.txtTcpServerSendData.Text = "48 45 4C 4C 4F";
             // 
@@ -428,7 +429,7 @@ namespace CCM.Example
             this.chkTcpServerBroadcast.AutoSize = true;
             this.chkTcpServerBroadcast.Location = new System.Drawing.Point(120, 96);
             this.chkTcpServerBroadcast.Name = "chkTcpServerBroadcast";
-            this.chkTcpServerBroadcast.Size = new System.Drawing.Size(93, 17);
+            this.chkTcpServerBroadcast.Size = new System.Drawing.Size(78, 19);
             this.chkTcpServerBroadcast.TabIndex = 9;
             this.chkTcpServerBroadcast.Text = "전체 전송";
             this.chkTcpServerBroadcast.UseVisualStyleBackColor = true;
@@ -466,7 +467,7 @@ namespace CCM.Example
             this.lblTcpIp.AutoSize = true;
             this.lblTcpIp.Location = new System.Drawing.Point(9, 30);
             this.lblTcpIp.Name = "lblTcpIp";
-            this.lblTcpIp.Size = new System.Drawing.Size(17, 13);
+            this.lblTcpIp.Size = new System.Drawing.Size(45, 15);
             this.lblTcpIp.TabIndex = 0;
             this.lblTcpIp.Text = "IP 주소";
             // 
@@ -474,7 +475,7 @@ namespace CCM.Example
             // 
             this.txtTcpIp.Location = new System.Drawing.Point(60, 27);
             this.txtTcpIp.Name = "txtTcpIp";
-            this.txtTcpIp.Size = new System.Drawing.Size(103, 20);
+            this.txtTcpIp.Size = new System.Drawing.Size(103, 23);
             this.txtTcpIp.TabIndex = 1;
             this.txtTcpIp.Text = "127.0.0.1";
             // 
@@ -483,7 +484,7 @@ namespace CCM.Example
             this.lblTcpPort.AutoSize = true;
             this.lblTcpPort.Location = new System.Drawing.Point(170, 30);
             this.lblTcpPort.Name = "lblTcpPort";
-            this.lblTcpPort.Size = new System.Drawing.Size(26, 13);
+            this.lblTcpPort.Size = new System.Drawing.Size(31, 15);
             this.lblTcpPort.TabIndex = 2;
             this.lblTcpPort.Text = "포트";
             // 
@@ -501,7 +502,7 @@ namespace CCM.Example
             0,
             0});
             this.numTcpPort.Name = "numTcpPort";
-            this.numTcpPort.Size = new System.Drawing.Size(69, 20);
+            this.numTcpPort.Size = new System.Drawing.Size(69, 23);
             this.numTcpPort.TabIndex = 3;
             this.numTcpPort.Value = new decimal(new int[] {
             8000,
@@ -535,7 +536,7 @@ namespace CCM.Example
             this.lblTcpStatus.ForeColor = System.Drawing.Color.Gray;
             this.lblTcpStatus.Location = new System.Drawing.Point(445, 30);
             this.lblTcpStatus.Name = "lblTcpStatus";
-            this.lblTcpStatus.Size = new System.Drawing.Size(54, 13);
+            this.lblTcpStatus.Size = new System.Drawing.Size(59, 15);
             this.lblTcpStatus.TabIndex = 6;
             this.lblTcpStatus.Text = "연결 안됨";
             // 
@@ -543,7 +544,7 @@ namespace CCM.Example
             // 
             this.txtTcpSendData.Location = new System.Drawing.Point(43, 65);
             this.txtTcpSendData.Name = "txtTcpSendData";
-            this.txtTcpSendData.Size = new System.Drawing.Size(343, 20);
+            this.txtTcpSendData.Size = new System.Drawing.Size(343, 23);
             this.txtTcpSendData.TabIndex = 7;
             this.txtTcpSendData.Text = "48 45 4C 4C 4F";
             // 
@@ -582,7 +583,7 @@ namespace CCM.Example
             this.lblUdpRemoteIp.AutoSize = true;
             this.lblUdpRemoteIp.Location = new System.Drawing.Point(9, 30);
             this.lblUdpRemoteIp.Name = "lblUdpRemoteIp";
-            this.lblUdpRemoteIp.Size = new System.Drawing.Size(57, 13);
+            this.lblUdpRemoteIp.Size = new System.Drawing.Size(45, 15);
             this.lblUdpRemoteIp.TabIndex = 0;
             this.lblUdpRemoteIp.Text = "원격 IP";
             // 
@@ -590,7 +591,7 @@ namespace CCM.Example
             // 
             this.txtUdpRemoteIp.Location = new System.Drawing.Point(60, 27);
             this.txtUdpRemoteIp.Name = "txtUdpRemoteIp";
-            this.txtUdpRemoteIp.Size = new System.Drawing.Size(95, 20);
+            this.txtUdpRemoteIp.Size = new System.Drawing.Size(95, 23);
             this.txtUdpRemoteIp.TabIndex = 1;
             this.txtUdpRemoteIp.Text = "127.0.0.1";
             // 
@@ -599,7 +600,7 @@ namespace CCM.Example
             this.lblUdpRemotePort.AutoSize = true;
             this.lblUdpRemotePort.Location = new System.Drawing.Point(160, 30);
             this.lblUdpRemotePort.Name = "lblUdpRemotePort";
-            this.lblUdpRemotePort.Size = new System.Drawing.Size(66, 13);
+            this.lblUdpRemotePort.Size = new System.Drawing.Size(59, 15);
             this.lblUdpRemotePort.TabIndex = 2;
             this.lblUdpRemotePort.Text = "원격 포트";
             // 
@@ -617,7 +618,7 @@ namespace CCM.Example
             0,
             0});
             this.numUdpRemotePort.Name = "numUdpRemotePort";
-            this.numUdpRemotePort.Size = new System.Drawing.Size(60, 20);
+            this.numUdpRemotePort.Size = new System.Drawing.Size(60, 23);
             this.numUdpRemotePort.TabIndex = 3;
             this.numUdpRemotePort.Value = new decimal(new int[] {
             8001,
@@ -630,7 +631,7 @@ namespace CCM.Example
             this.lblUdpLocalPort.AutoSize = true;
             this.lblUdpLocalPort.Location = new System.Drawing.Point(295, 30);
             this.lblUdpLocalPort.Name = "lblUdpLocalPort";
-            this.lblUdpLocalPort.Size = new System.Drawing.Size(55, 13);
+            this.lblUdpLocalPort.Size = new System.Drawing.Size(59, 15);
             this.lblUdpLocalPort.TabIndex = 4;
             this.lblUdpLocalPort.Text = "로컬 포트";
             // 
@@ -643,7 +644,7 @@ namespace CCM.Example
             0,
             0});
             this.numUdpLocalPort.Name = "numUdpLocalPort";
-            this.numUdpLocalPort.Size = new System.Drawing.Size(60, 20);
+            this.numUdpLocalPort.Size = new System.Drawing.Size(60, 23);
             this.numUdpLocalPort.TabIndex = 5;
             this.numUdpLocalPort.Value = new decimal(new int[] {
             8002,
@@ -677,7 +678,7 @@ namespace CCM.Example
             this.lblUdpStatus.ForeColor = System.Drawing.Color.Gray;
             this.lblUdpStatus.Location = new System.Drawing.Point(575, 30);
             this.lblUdpStatus.Name = "lblUdpStatus";
-            this.lblUdpStatus.Size = new System.Drawing.Size(40, 13);
+            this.lblUdpStatus.Size = new System.Drawing.Size(43, 15);
             this.lblUdpStatus.TabIndex = 8;
             this.lblUdpStatus.Text = "비활성";
             // 
@@ -685,7 +686,7 @@ namespace CCM.Example
             // 
             this.txtUdpSendData.Location = new System.Drawing.Point(60, 65);
             this.txtUdpSendData.Name = "txtUdpSendData";
-            this.txtUdpSendData.Size = new System.Drawing.Size(343, 20);
+            this.txtUdpSendData.Size = new System.Drawing.Size(343, 23);
             this.txtUdpSendData.TabIndex = 9;
             this.txtUdpSendData.Text = "48 45 4C 4C 4F";
             // 
@@ -704,7 +705,7 @@ namespace CCM.Example
             this.tabSerial.Controls.Add(this.grpSerial);
             this.tabSerial.Location = new System.Drawing.Point(4, 22);
             this.tabSerial.Name = "tabSerial";
-            this.tabSerial.Size = new System.Drawing.Size(849, 516);
+            this.tabSerial.Size = new System.Drawing.Size(849, 383);
             this.tabSerial.TabIndex = 2;
             this.tabSerial.Text = "시리얼 포트";
             this.tabSerial.UseVisualStyleBackColor = true;
@@ -733,7 +734,7 @@ namespace CCM.Example
             this.lblSerialPort.AutoSize = true;
             this.lblSerialPort.Location = new System.Drawing.Point(9, 30);
             this.lblSerialPort.Name = "lblSerialPort";
-            this.lblSerialPort.Size = new System.Drawing.Size(26, 13);
+            this.lblSerialPort.Size = new System.Drawing.Size(31, 15);
             this.lblSerialPort.TabIndex = 0;
             this.lblSerialPort.Text = "포트";
             // 
@@ -743,7 +744,7 @@ namespace CCM.Example
             this.cmbSerialPort.FormattingEnabled = true;
             this.cmbSerialPort.Location = new System.Drawing.Point(43, 27);
             this.cmbSerialPort.Name = "cmbSerialPort";
-            this.cmbSerialPort.Size = new System.Drawing.Size(86, 21);
+            this.cmbSerialPort.Size = new System.Drawing.Size(86, 23);
             this.cmbSerialPort.TabIndex = 1;
             // 
             // lblSerialBaudRate
@@ -751,7 +752,7 @@ namespace CCM.Example
             this.lblSerialBaudRate.AutoSize = true;
             this.lblSerialBaudRate.Location = new System.Drawing.Point(137, 30);
             this.lblSerialBaudRate.Name = "lblSerialBaudRate";
-            this.lblSerialBaudRate.Size = new System.Drawing.Size(55, 13);
+            this.lblSerialBaudRate.Size = new System.Drawing.Size(59, 15);
             this.lblSerialBaudRate.TabIndex = 2;
             this.lblSerialBaudRate.Text = "통신 속도";
             // 
@@ -769,7 +770,7 @@ namespace CCM.Example
             0,
             0});
             this.numSerialBaudRate.Name = "numSerialBaudRate";
-            this.numSerialBaudRate.Size = new System.Drawing.Size(69, 20);
+            this.numSerialBaudRate.Size = new System.Drawing.Size(69, 23);
             this.numSerialBaudRate.TabIndex = 3;
             this.numSerialBaudRate.Value = new decimal(new int[] {
             9600,
@@ -813,7 +814,7 @@ namespace CCM.Example
             this.lblSerialStatus.ForeColor = System.Drawing.Color.Gray;
             this.lblSerialStatus.Location = new System.Drawing.Point(500, 30);
             this.lblSerialStatus.Name = "lblSerialStatus";
-            this.lblSerialStatus.Size = new System.Drawing.Size(29, 13);
+            this.lblSerialStatus.Size = new System.Drawing.Size(31, 15);
             this.lblSerialStatus.TabIndex = 7;
             this.lblSerialStatus.Text = "닫힘";
             // 
@@ -821,7 +822,7 @@ namespace CCM.Example
             // 
             this.txtSerialSendData.Location = new System.Drawing.Point(43, 65);
             this.txtSerialSendData.Name = "txtSerialSendData";
-            this.txtSerialSendData.Size = new System.Drawing.Size(343, 20);
+            this.txtSerialSendData.Size = new System.Drawing.Size(343, 23);
             this.txtSerialSendData.TabIndex = 8;
             this.txtSerialSendData.Text = "48 45 4C 4C 4F";
             // 
@@ -841,7 +842,7 @@ namespace CCM.Example
             this.tabPlc.Controls.Add(this.grpPlcReadWrite);
             this.tabPlc.Location = new System.Drawing.Point(4, 22);
             this.tabPlc.Name = "tabPlc";
-            this.tabPlc.Size = new System.Drawing.Size(849, 319);
+            this.tabPlc.Size = new System.Drawing.Size(849, 383);
             this.tabPlc.TabIndex = 3;
             this.tabPlc.Text = "PLC";
             this.tabPlc.UseVisualStyleBackColor = true;
@@ -872,7 +873,7 @@ namespace CCM.Example
             this.lblPlcType.AutoSize = true;
             this.lblPlcType.Location = new System.Drawing.Point(9, 30);
             this.lblPlcType.Name = "lblPlcType";
-            this.lblPlcType.Size = new System.Drawing.Size(52, 13);
+            this.lblPlcType.Size = new System.Drawing.Size(56, 15);
             this.lblPlcType.TabIndex = 0;
             this.lblPlcType.Text = "PLC 타입";
             // 
@@ -880,41 +881,41 @@ namespace CCM.Example
             // 
             this.cmbPlcType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPlcType.FormattingEnabled = true;
-            this.cmbPlcType.Location = new System.Drawing.Point(63, 27);
+            this.cmbPlcType.Location = new System.Drawing.Point(70, 27);
             this.cmbPlcType.Name = "cmbPlcType";
-            this.cmbPlcType.Size = new System.Drawing.Size(112, 21);
+            this.cmbPlcType.Size = new System.Drawing.Size(112, 23);
             this.cmbPlcType.TabIndex = 1;
             this.cmbPlcType.SelectedIndexChanged += new System.EventHandler(this.cmbPlcType_SelectedIndexChanged);
             // 
             // lblPlcIp
             // 
             this.lblPlcIp.AutoSize = true;
-            this.lblPlcIp.Location = new System.Drawing.Point(180, 30);
+            this.lblPlcIp.Location = new System.Drawing.Point(190, 30);
             this.lblPlcIp.Name = "lblPlcIp";
-            this.lblPlcIp.Size = new System.Drawing.Size(17, 13);
+            this.lblPlcIp.Size = new System.Drawing.Size(45, 15);
             this.lblPlcIp.TabIndex = 2;
             this.lblPlcIp.Text = "IP 주소";
             // 
             // txtPlcIp
             // 
-            this.txtPlcIp.Location = new System.Drawing.Point(230, 27);
+            this.txtPlcIp.Location = new System.Drawing.Point(240, 27);
             this.txtPlcIp.Name = "txtPlcIp";
-            this.txtPlcIp.Size = new System.Drawing.Size(103, 20);
+            this.txtPlcIp.Size = new System.Drawing.Size(100, 23);
             this.txtPlcIp.TabIndex = 3;
             this.txtPlcIp.Text = "192.168.0.10";
             // 
             // lblPlcPort
             // 
             this.lblPlcPort.AutoSize = true;
-            this.lblPlcPort.Location = new System.Drawing.Point(340, 30);
+            this.lblPlcPort.Location = new System.Drawing.Point(345, 30);
             this.lblPlcPort.Name = "lblPlcPort";
-            this.lblPlcPort.Size = new System.Drawing.Size(26, 13);
+            this.lblPlcPort.Size = new System.Drawing.Size(31, 15);
             this.lblPlcPort.TabIndex = 4;
             this.lblPlcPort.Text = "포트";
             // 
             // numPlcPort
             // 
-            this.numPlcPort.Location = new System.Drawing.Point(375, 27);
+            this.numPlcPort.Location = new System.Drawing.Point(380, 27);
             this.numPlcPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -926,7 +927,7 @@ namespace CCM.Example
             0,
             0});
             this.numPlcPort.Name = "numPlcPort";
-            this.numPlcPort.Size = new System.Drawing.Size(60, 20);
+            this.numPlcPort.Size = new System.Drawing.Size(60, 23);
             this.numPlcPort.TabIndex = 5;
             this.numPlcPort.Value = new decimal(new int[] {
             5001,
@@ -936,7 +937,7 @@ namespace CCM.Example
             // 
             // btnPlcConnect
             // 
-            this.btnPlcConnect.Location = new System.Drawing.Point(450, 25);
+            this.btnPlcConnect.Location = new System.Drawing.Point(455, 25);
             this.btnPlcConnect.Name = "btnPlcConnect";
             this.btnPlcConnect.Size = new System.Drawing.Size(64, 25);
             this.btnPlcConnect.TabIndex = 6;
@@ -946,7 +947,7 @@ namespace CCM.Example
             // 
             // btnPlcDisconnect
             // 
-            this.btnPlcDisconnect.Location = new System.Drawing.Point(520, 25);
+            this.btnPlcDisconnect.Location = new System.Drawing.Point(525, 25);
             this.btnPlcDisconnect.Name = "btnPlcDisconnect";
             this.btnPlcDisconnect.Size = new System.Drawing.Size(75, 25);
             this.btnPlcDisconnect.TabIndex = 7;
@@ -958,9 +959,9 @@ namespace CCM.Example
             // 
             this.lblPlcStatus.AutoSize = true;
             this.lblPlcStatus.ForeColor = System.Drawing.Color.Gray;
-            this.lblPlcStatus.Location = new System.Drawing.Point(605, 30);
+            this.lblPlcStatus.Location = new System.Drawing.Point(610, 30);
             this.lblPlcStatus.Name = "lblPlcStatus";
-            this.lblPlcStatus.Size = new System.Drawing.Size(54, 13);
+            this.lblPlcStatus.Size = new System.Drawing.Size(59, 15);
             this.lblPlcStatus.TabIndex = 8;
             this.lblPlcStatus.Text = "연결 안됨";
             // 
@@ -983,7 +984,7 @@ namespace CCM.Example
             this.lblS7CpuType.AutoSize = true;
             this.lblS7CpuType.Location = new System.Drawing.Point(0, 11);
             this.lblS7CpuType.Name = "lblS7CpuType";
-            this.lblS7CpuType.Size = new System.Drawing.Size(54, 13);
+            this.lblS7CpuType.Size = new System.Drawing.Size(58, 15);
             this.lblS7CpuType.TabIndex = 0;
             this.lblS7CpuType.Text = "CPU 타입";
             // 
@@ -991,52 +992,52 @@ namespace CCM.Example
             // 
             this.cmbS7CpuType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbS7CpuType.FormattingEnabled = true;
-            this.cmbS7CpuType.Location = new System.Drawing.Point(57, 8);
+            this.cmbS7CpuType.Location = new System.Drawing.Point(65, 8);
             this.cmbS7CpuType.Name = "cmbS7CpuType";
-            this.cmbS7CpuType.Size = new System.Drawing.Size(86, 21);
+            this.cmbS7CpuType.Size = new System.Drawing.Size(86, 23);
             this.cmbS7CpuType.TabIndex = 1;
             this.cmbS7CpuType.SelectedIndexChanged += new System.EventHandler(this.cmbS7CpuType_SelectedIndexChanged);
             // 
             // lblS7Rack
             // 
             this.lblS7Rack.AutoSize = true;
-            this.lblS7Rack.Location = new System.Drawing.Point(146, 11);
+            this.lblS7Rack.Location = new System.Drawing.Point(160, 11);
             this.lblS7Rack.Name = "lblS7Rack";
-            this.lblS7Rack.Size = new System.Drawing.Size(33, 13);
+            this.lblS7Rack.Size = new System.Drawing.Size(19, 15);
             this.lblS7Rack.TabIndex = 2;
             this.lblS7Rack.Text = "랙";
             // 
             // numS7Rack
             // 
-            this.numS7Rack.Location = new System.Drawing.Point(165, 8);
+            this.numS7Rack.Location = new System.Drawing.Point(185, 8);
             this.numS7Rack.Maximum = new decimal(new int[] {
             7,
             0,
             0,
             0});
             this.numS7Rack.Name = "numS7Rack";
-            this.numS7Rack.Size = new System.Drawing.Size(43, 20);
+            this.numS7Rack.Size = new System.Drawing.Size(43, 23);
             this.numS7Rack.TabIndex = 3;
             // 
             // lblS7Slot
             // 
             this.lblS7Slot.AutoSize = true;
-            this.lblS7Slot.Location = new System.Drawing.Point(215, 11);
+            this.lblS7Slot.Location = new System.Drawing.Point(235, 11);
             this.lblS7Slot.Name = "lblS7Slot";
-            this.lblS7Slot.Size = new System.Drawing.Size(25, 13);
+            this.lblS7Slot.Size = new System.Drawing.Size(31, 15);
             this.lblS7Slot.TabIndex = 4;
             this.lblS7Slot.Text = "슬롯";
             // 
             // numS7Slot
             // 
-            this.numS7Slot.Location = new System.Drawing.Point(245, 8);
+            this.numS7Slot.Location = new System.Drawing.Point(270, 8);
             this.numS7Slot.Maximum = new decimal(new int[] {
             31,
             0,
             0,
             0});
             this.numS7Slot.Name = "numS7Slot";
-            this.numS7Slot.Size = new System.Drawing.Size(43, 20);
+            this.numS7Slot.Size = new System.Drawing.Size(43, 23);
             this.numS7Slot.TabIndex = 5;
             this.numS7Slot.Value = new decimal(new int[] {
             1,
@@ -1059,7 +1060,7 @@ namespace CCM.Example
             this.lblXgtCpuType.AutoSize = true;
             this.lblXgtCpuType.Location = new System.Drawing.Point(0, 11);
             this.lblXgtCpuType.Name = "lblXgtCpuType";
-            this.lblXgtCpuType.Size = new System.Drawing.Size(54, 13);
+            this.lblXgtCpuType.Size = new System.Drawing.Size(58, 15);
             this.lblXgtCpuType.TabIndex = 0;
             this.lblXgtCpuType.Text = "CPU 타입";
             // 
@@ -1067,9 +1068,9 @@ namespace CCM.Example
             // 
             this.cmbXgtCpuType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbXgtCpuType.FormattingEnabled = true;
-            this.cmbXgtCpuType.Location = new System.Drawing.Point(60, 8);
+            this.cmbXgtCpuType.Location = new System.Drawing.Point(65, 8);
             this.cmbXgtCpuType.Name = "cmbXgtCpuType";
-            this.cmbXgtCpuType.Size = new System.Drawing.Size(69, 21);
+            this.cmbXgtCpuType.Size = new System.Drawing.Size(69, 23);
             this.cmbXgtCpuType.TabIndex = 1;
             // 
             // pnlModbusOptions
@@ -1089,7 +1090,7 @@ namespace CCM.Example
             this.lblModbusSlave.AutoSize = true;
             this.lblModbusSlave.Location = new System.Drawing.Point(0, 9);
             this.lblModbusSlave.Name = "lblModbusSlave";
-            this.lblModbusSlave.Size = new System.Drawing.Size(59, 13);
+            this.lblModbusSlave.Size = new System.Drawing.Size(63, 15);
             this.lblModbusSlave.TabIndex = 0;
             this.lblModbusSlave.Text = "Slave 주소";
             // 
@@ -1107,7 +1108,7 @@ namespace CCM.Example
             0,
             0});
             this.numModbusSlave.Name = "numModbusSlave";
-            this.numModbusSlave.Size = new System.Drawing.Size(43, 20);
+            this.numModbusSlave.Size = new System.Drawing.Size(43, 23);
             this.numModbusSlave.TabIndex = 1;
             this.numModbusSlave.Value = new decimal(new int[] {
             1,
@@ -1121,7 +1122,7 @@ namespace CCM.Example
             this.cmbModbusPort.FormattingEnabled = true;
             this.cmbModbusPort.Location = new System.Drawing.Point(120, 5);
             this.cmbModbusPort.Name = "cmbModbusPort";
-            this.cmbModbusPort.Size = new System.Drawing.Size(69, 21);
+            this.cmbModbusPort.Size = new System.Drawing.Size(69, 23);
             this.cmbModbusPort.TabIndex = 2;
             // 
             // numModbusBaudRate
@@ -1138,7 +1139,7 @@ namespace CCM.Example
             0,
             0});
             this.numModbusBaudRate.Name = "numModbusBaudRate";
-            this.numModbusBaudRate.Size = new System.Drawing.Size(69, 20);
+            this.numModbusBaudRate.Size = new System.Drawing.Size(69, 23);
             this.numModbusBaudRate.TabIndex = 3;
             this.numModbusBaudRate.Value = new decimal(new int[] {
             9600,
@@ -1178,37 +1179,37 @@ namespace CCM.Example
             this.lblPlcDevice.AutoSize = true;
             this.lblPlcDevice.Location = new System.Drawing.Point(9, 30);
             this.lblPlcDevice.Name = "lblPlcDevice";
-            this.lblPlcDevice.Size = new System.Drawing.Size(51, 13);
+            this.lblPlcDevice.Size = new System.Drawing.Size(55, 15);
             this.lblPlcDevice.TabIndex = 0;
             this.lblPlcDevice.Text = "디바이스";
             // 
             // txtPlcDevice
             // 
-            this.txtPlcDevice.Location = new System.Drawing.Point(60, 27);
+            this.txtPlcDevice.Location = new System.Drawing.Point(70, 27);
             this.txtPlcDevice.Name = "txtPlcDevice";
-            this.txtPlcDevice.Size = new System.Drawing.Size(52, 20);
+            this.txtPlcDevice.Size = new System.Drawing.Size(52, 23);
             this.txtPlcDevice.TabIndex = 1;
             this.txtPlcDevice.Text = "D";
             // 
             // lblPlcAddress
             // 
             this.lblPlcAddress.AutoSize = true;
-            this.lblPlcAddress.Location = new System.Drawing.Point(120, 30);
+            this.lblPlcAddress.Location = new System.Drawing.Point(130, 30);
             this.lblPlcAddress.Name = "lblPlcAddress";
-            this.lblPlcAddress.Size = new System.Drawing.Size(29, 13);
+            this.lblPlcAddress.Size = new System.Drawing.Size(31, 15);
             this.lblPlcAddress.TabIndex = 2;
             this.lblPlcAddress.Text = "주소";
             // 
             // numPlcAddress
             // 
-            this.numPlcAddress.Location = new System.Drawing.Point(150, 27);
+            this.numPlcAddress.Location = new System.Drawing.Point(165, 27);
             this.numPlcAddress.Maximum = new decimal(new int[] {
             99999999,
             0,
             0,
             0});
             this.numPlcAddress.Name = "numPlcAddress";
-            this.numPlcAddress.Size = new System.Drawing.Size(69, 20);
+            this.numPlcAddress.Size = new System.Drawing.Size(69, 23);
             this.numPlcAddress.TabIndex = 3;
             this.numPlcAddress.Value = new decimal(new int[] {
             100,
@@ -1219,15 +1220,15 @@ namespace CCM.Example
             // lblPlcCount
             // 
             this.lblPlcCount.AutoSize = true;
-            this.lblPlcCount.Location = new System.Drawing.Point(231, 30);
+            this.lblPlcCount.Location = new System.Drawing.Point(245, 30);
             this.lblPlcCount.Name = "lblPlcCount";
-            this.lblPlcCount.Size = new System.Drawing.Size(29, 13);
+            this.lblPlcCount.Size = new System.Drawing.Size(31, 15);
             this.lblPlcCount.TabIndex = 4;
             this.lblPlcCount.Text = "개수";
             // 
             // numPlcCount
             // 
-            this.numPlcCount.Location = new System.Drawing.Point(261, 27);
+            this.numPlcCount.Location = new System.Drawing.Point(280, 27);
             this.numPlcCount.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -1239,7 +1240,7 @@ namespace CCM.Example
             0,
             0});
             this.numPlcCount.Name = "numPlcCount";
-            this.numPlcCount.Size = new System.Drawing.Size(51, 20);
+            this.numPlcCount.Size = new System.Drawing.Size(51, 23);
             this.numPlcCount.TabIndex = 5;
             this.numPlcCount.Value = new decimal(new int[] {
             10,
@@ -1250,15 +1251,15 @@ namespace CCM.Example
             // lblPlcWriteValue
             // 
             this.lblPlcWriteValue.AutoSize = true;
-            this.lblPlcWriteValue.Location = new System.Drawing.Point(326, 30);
+            this.lblPlcWriteValue.Location = new System.Drawing.Point(345, 30);
             this.lblPlcWriteValue.Name = "lblPlcWriteValue";
-            this.lblPlcWriteValue.Size = new System.Drawing.Size(43, 13);
+            this.lblPlcWriteValue.Size = new System.Drawing.Size(47, 15);
             this.lblPlcWriteValue.TabIndex = 6;
             this.lblPlcWriteValue.Text = "쓰기 값";
             // 
             // numPlcWriteValue
             // 
-            this.numPlcWriteValue.Location = new System.Drawing.Point(377, 27);
+            this.numPlcWriteValue.Location = new System.Drawing.Point(400, 27);
             this.numPlcWriteValue.Maximum = new decimal(new int[] {
             32767,
             0,
@@ -1270,7 +1271,7 @@ namespace CCM.Example
             0,
             -2147483648});
             this.numPlcWriteValue.Name = "numPlcWriteValue";
-            this.numPlcWriteValue.Size = new System.Drawing.Size(69, 20);
+            this.numPlcWriteValue.Size = new System.Drawing.Size(69, 23);
             this.numPlcWriteValue.TabIndex = 7;
             this.numPlcWriteValue.Value = new decimal(new int[] {
             100,
@@ -1280,18 +1281,18 @@ namespace CCM.Example
             // 
             // txtPlcWriteString
             // 
-            this.txtPlcWriteString.Location = new System.Drawing.Point(377, 27);
+            this.txtPlcWriteString.Location = new System.Drawing.Point(400, 27);
             this.txtPlcWriteString.Name = "txtPlcWriteString";
-            this.txtPlcWriteString.Size = new System.Drawing.Size(69, 20);
+            this.txtPlcWriteString.Size = new System.Drawing.Size(69, 23);
             this.txtPlcWriteString.TabIndex = 10;
             this.txtPlcWriteString.Visible = false;
             // 
             // chkPlcBitValue
             // 
             this.chkPlcBitValue.AutoSize = true;
-            this.chkPlcBitValue.Location = new System.Drawing.Point(463, 29);
+            this.chkPlcBitValue.Location = new System.Drawing.Point(485, 29);
             this.chkPlcBitValue.Name = "chkPlcBitValue";
-            this.chkPlcBitValue.Size = new System.Drawing.Size(67, 17);
+            this.chkPlcBitValue.Size = new System.Drawing.Size(72, 19);
             this.chkPlcBitValue.TabIndex = 8;
             this.chkPlcBitValue.Text = "비트 ON";
             this.chkPlcBitValue.UseVisualStyleBackColor = true;
@@ -1299,9 +1300,9 @@ namespace CCM.Example
             // chkPlcDisplayAsString
             // 
             this.chkPlcDisplayAsString.AutoSize = true;
-            this.chkPlcDisplayAsString.Location = new System.Drawing.Point(531, 29);
+            this.chkPlcDisplayAsString.Location = new System.Drawing.Point(565, 29);
             this.chkPlcDisplayAsString.Name = "chkPlcDisplayAsString";
-            this.chkPlcDisplayAsString.Size = new System.Drawing.Size(84, 17);
+            this.chkPlcDisplayAsString.Size = new System.Drawing.Size(90, 19);
             this.chkPlcDisplayAsString.TabIndex = 9;
             this.chkPlcDisplayAsString.Text = "문자열 표시";
             this.chkPlcDisplayAsString.UseVisualStyleBackColor = true;
@@ -1310,9 +1311,9 @@ namespace CCM.Example
             // lblStringByteOrder
             // 
             this.lblStringByteOrder.AutoSize = true;
-            this.lblStringByteOrder.Location = new System.Drawing.Point(617, 30);
+            this.lblStringByteOrder.Location = new System.Drawing.Point(665, 30);
             this.lblStringByteOrder.Name = "lblStringByteOrder";
-            this.lblStringByteOrder.Size = new System.Drawing.Size(54, 13);
+            this.lblStringByteOrder.Size = new System.Drawing.Size(71, 15);
             this.lblStringByteOrder.TabIndex = 14;
             this.lblStringByteOrder.Text = "바이트 순서";
             // 
@@ -1320,14 +1321,14 @@ namespace CCM.Example
             // 
             this.cmbStringByteOrder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbStringByteOrder.FormattingEnabled = true;
-            this.cmbStringByteOrder.Location = new System.Drawing.Point(695, 27);
+            this.cmbStringByteOrder.Location = new System.Drawing.Point(745, 27);
             this.cmbStringByteOrder.Name = "cmbStringByteOrder";
-            this.cmbStringByteOrder.Size = new System.Drawing.Size(80, 21);
+            this.cmbStringByteOrder.Size = new System.Drawing.Size(80, 23);
             this.cmbStringByteOrder.TabIndex = 15;
             // 
             // btnPlcReadWord
             // 
-            this.btnPlcReadWord.Location = new System.Drawing.Point(60, 65);
+            this.btnPlcReadWord.Location = new System.Drawing.Point(70, 65);
             this.btnPlcReadWord.Name = "btnPlcReadWord";
             this.btnPlcReadWord.Size = new System.Drawing.Size(86, 25);
             this.btnPlcReadWord.TabIndex = 9;
@@ -1337,7 +1338,7 @@ namespace CCM.Example
             // 
             // btnPlcWriteWord
             // 
-            this.btnPlcWriteWord.Location = new System.Drawing.Point(154, 65);
+            this.btnPlcWriteWord.Location = new System.Drawing.Point(164, 65);
             this.btnPlcWriteWord.Name = "btnPlcWriteWord";
             this.btnPlcWriteWord.Size = new System.Drawing.Size(86, 25);
             this.btnPlcWriteWord.TabIndex = 10;
@@ -1347,7 +1348,7 @@ namespace CCM.Example
             // 
             // btnPlcReadBit
             // 
-            this.btnPlcReadBit.Location = new System.Drawing.Point(257, 65);
+            this.btnPlcReadBit.Location = new System.Drawing.Point(267, 65);
             this.btnPlcReadBit.Name = "btnPlcReadBit";
             this.btnPlcReadBit.Size = new System.Drawing.Size(86, 25);
             this.btnPlcReadBit.TabIndex = 11;
@@ -1357,7 +1358,7 @@ namespace CCM.Example
             // 
             // btnPlcWriteBit
             // 
-            this.btnPlcWriteBit.Location = new System.Drawing.Point(351, 65);
+            this.btnPlcWriteBit.Location = new System.Drawing.Point(370, 65);
             this.btnPlcWriteBit.Name = "btnPlcWriteBit";
             this.btnPlcWriteBit.Size = new System.Drawing.Size(86, 25);
             this.btnPlcWriteBit.TabIndex = 12;
@@ -1367,7 +1368,7 @@ namespace CCM.Example
             // 
             // txtPlcResult
             // 
-            this.txtPlcResult.Location = new System.Drawing.Point(60, 103);
+            this.txtPlcResult.Location = new System.Drawing.Point(70, 103);
             this.txtPlcResult.Multiline = true;
             this.txtPlcResult.Name = "txtPlcResult";
             this.txtPlcResult.ReadOnly = true;
@@ -1391,7 +1392,7 @@ namespace CCM.Example
             this.splitContainer1.Panel2.Controls.Add(this.txtLog);
             this.splitContainer1.Panel2.Controls.Add(this.btnClearLog);
             this.splitContainer1.Size = new System.Drawing.Size(857, 609);
-            this.splitContainer1.SplitterDistance = 345;
+            this.splitContainer1.SplitterDistance = 409;
             this.splitContainer1.TabIndex = 0;
             // 
             // txtLog
@@ -1407,7 +1408,7 @@ namespace CCM.Example
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtLog.Size = new System.Drawing.Size(763, 251);
+            this.txtLog.Size = new System.Drawing.Size(763, 187);
             this.txtLog.TabIndex = 0;
             // 
             // btnClearLog
