@@ -328,7 +328,11 @@ namespace CCM.Communication.PLC
                     break;
             }
 
-            return $"%{device.ToUpper()}{typeChar}{address}";
+            string normalizedDevice = device.Trim().TrimStart('%').ToUpper();
+            if (!normalizedDevice.EndsWith(typeChar))
+                normalizedDevice += typeChar;
+
+            return $"%{normalizedDevice}{address}";
         }
 
         /// <summary>
@@ -400,12 +404,8 @@ namespace CCM.Communication.PLC
             // Variable Name
             data.AddRange(nameBytes);
 
-            // Data Count (2 bytes)
-            int count = writeData.Length;
-            if (dataType == DATA_TYPE_WORD) count /= 2;
-            else if (dataType == DATA_TYPE_DWORD) count /= 4;
-            data.Add((byte)(count & 0xFF));
-            data.Add((byte)((count >> 8) & 0xFF));
+            data.Add((byte)(writeData.Length & 0xFF));
+            data.Add((byte)((writeData.Length >> 8) & 0xFF));
 
             // Write Data
             data.AddRange(writeData);
